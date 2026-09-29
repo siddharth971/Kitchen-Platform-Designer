@@ -202,7 +202,6 @@ export function generateCutList(project: Project): CutPiece[] {
       const lenB = plat.lengthB || 1800;
       const depB = plat.depthB || 600;
 
-      // Arm A is the primary straight slab
       const p1Cutouts = platformCutouts.filter((c) => c.xOffset < lenA);
       pieces.push({
         id: `${plat.id}-arm-a`,
@@ -222,7 +221,6 @@ export function generateCutList(project: Project): CutPiece[] {
         seamNotes: `Corner butt-joint with Arm B at depth ${depA} mm`,
       });
 
-      // Arm B runs from corner seam to outer end
       const armBLength = Math.max(100, lenB - depA);
       const p2Cutouts = platformCutouts
         .filter((c) => c.xOffset >= lenA)
@@ -243,6 +241,70 @@ export function generateCutList(project: Project): CutPiece[] {
         finishedEdges: ["front", "right"],
         cutouts: p2Cutouts,
         seamNotes: `Mates with Arm A at 90° corner seam`,
+      });
+    } else if (plat.shape === "u-shaped") {
+      const lenA = plat.lengthA || 2400;
+      const depA = plat.depthA || 600;
+      const lenB = plat.lengthB || 1800;
+      const depB = plat.depthB || 600;
+
+      const baseLength = lenA;
+      const legLength = Math.max(100, lenB - depA);
+      const leftInset = Math.min(depB, lenA / 2);
+      const rightInset = Math.min(depB, lenA / 2);
+
+      pieces.push({
+        id: `${plat.id}-base`,
+        label: `Piece #${pieceIndex++} (${platName} - Base)`,
+        platformId: plat.id,
+        platformName: platName,
+        length: baseLength,
+        depth: depA,
+        thickness,
+        areaSqMm: baseLength * depA,
+        areaSqFt: (baseLength * depA) * SQ_MM_TO_SQ_FT,
+        materialId,
+        materialName,
+        edgeProfile,
+        finishedEdges: ["front", "left", "right"],
+        cutouts: platformCutouts,
+        seamNotes: `Base run for U-shaped platform`,
+      });
+
+      pieces.push({
+        id: `${plat.id}-left-leg`,
+        label: `Piece #${pieceIndex++} (${platName} - Left Leg)`,
+        platformId: plat.id,
+        platformName: platName,
+        length: legLength,
+        depth: leftInset,
+        thickness,
+        areaSqMm: legLength * leftInset,
+        areaSqFt: (legLength * leftInset) * SQ_MM_TO_SQ_FT,
+        materialId,
+        materialName,
+        edgeProfile,
+        finishedEdges: ["front", "left"],
+        cutouts: [],
+        seamNotes: `Left leg return in U-shaped profile`,
+      });
+
+      pieces.push({
+        id: `${plat.id}-right-leg`,
+        label: `Piece #${pieceIndex++} (${platName} - Right Leg)`,
+        platformId: plat.id,
+        platformName: platName,
+        length: legLength,
+        depth: rightInset,
+        thickness,
+        areaSqMm: legLength * rightInset,
+        areaSqFt: (legLength * rightInset) * SQ_MM_TO_SQ_FT,
+        materialId,
+        materialName,
+        edgeProfile,
+        finishedEdges: ["front", "right"],
+        cutouts: [],
+        seamNotes: `Right leg return in U-shaped profile`,
       });
     }
   }

@@ -1,5 +1,6 @@
 import { PolygonMeshBuilder } from "@babylonjs/core/Meshes/polygonMesh";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
+import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { Color3 } from "@babylonjs/core/Maths/math.color";
 import { Vector2, Vector3 } from "@babylonjs/core/Maths/math.vector";
@@ -11,6 +12,7 @@ import { computePlatformFootprint, computePlatformSeams } from "@/core/geometry/
 import { computeCutoutPolygon } from "@/core/geometry/cutout";
 import { toSceneLength, toScene2D } from "./coordinates";
 import earcut from "earcut";
+import { SAMPLE_MATERIALS } from "@/data/presets";
 
 export class PlatformRenderer {
   private scene: Scene;
@@ -27,18 +29,25 @@ export class PlatformRenderer {
   private carcassMaterial: StandardMaterial;
   private backsplashMaterial: StandardMaterial;
   private handleMaterial: StandardMaterial;
+  private slabDefaultColor: Color3;
+  private slabSelectedDefaultColor: Color3;
+  private platformRoots = new Map<string, TransformNode>();
+  private customMaterials: StandardMaterial[] = [];
 
   constructor(scene: Scene) {
     this.scene = scene;
 
+    this.slabDefaultColor = new Color3(0.12, 0.12, 0.14);
+    this.slabSelectedDefaultColor = new Color3(0.18, 0.22, 0.3);
+
     // Countertop Stone Slab Material (Polished Granite / Quartz look)
     this.slabMaterial = new StandardMaterial("slabMatDefault", this.scene);
-    this.slabMaterial.diffuseColor = new Color3(0.12, 0.12, 0.14); // Dark polished granite
+    this.slabMaterial.diffuseColor = this.slabDefaultColor;
     this.slabMaterial.specularColor = new Color3(0.4, 0.4, 0.4);
     this.slabMaterial.specularPower = 32;
 
     this.slabSelectedMaterial = new StandardMaterial("slabMatSelected", this.scene);
-    this.slabSelectedMaterial.diffuseColor = new Color3(0.18, 0.22, 0.3);
+    this.slabSelectedMaterial.diffuseColor = this.slabSelectedDefaultColor;
     this.slabSelectedMaterial.emissiveColor = new Color3(0.08, 0.12, 0.2);
     this.slabSelectedMaterial.specularColor = new Color3(0.5, 0.6, 0.8);
 
@@ -65,8 +74,16 @@ export class PlatformRenderer {
     this.clearMeshes();
 
     for (const platform of platforms) {
+      const meshStarts = {
+        slabs: this.slabMeshes.length,
+        carcasses: this.carcassMeshes.length,
+        backsplashes: this.backsplashMeshes.length,
+        seams: this.seamLineMeshes.length,
+        dimensions: this.dimensionLineMeshes.length,
+        handles: this.handleMeshes.length,
+      };
       const isSelected = selectedId === platform.id;
-      const slabMat = isSelected ? this.slabSelectedMaterial : this.slabMaterial;
+      const slabMat = this.getPlatformMaterial(platform, isSelected ? this.slabSelectedMaterial : this.slabMaterial);
 
       // 1. Compute 2D Footprint Polygon in Global MM
       const footprint = computePlatformFootprint(platform);
@@ -142,7 +159,6 @@ export class PlatformRenderer {
         carcassMesh.isPickable = false;
         this.carcassMeshes.push(carcassMesh);
       } else if (platform.shape === "l-shaped") {
-        // Run A Carcass
         const carcassWidthA = toSceneLength(platform.lengthA - 20);
         const carcassDepthA = toSceneLength(platform.depthA - 40);
         const carcassXA = toSceneLength(platform.position.x + platform.lengthA / 2);
@@ -162,7 +178,6 @@ export class PlatformRenderer {
         carcassA.isPickable = false;
         this.carcassMeshes.push(carcassA);
 
-        // Run B Carcass (extending after Run A)
         const carcassLenB = platform.lengthB - platform.depthA - 20;
         if (carcassLenB > 0) {
           const carcassDepthB = toSceneLength(platform.depthB - 40);
@@ -182,6 +197,55 @@ export class PlatformRenderer {
           carcassB.material = this.carcassMaterial;
           carcassB.isPickable = false;
           this.carcassMeshes.push(carcassB);
+        }
+      } else if (platform.shape === "u-shaped") {
+        const baseWidth = toSceneLength(platform.lengthA - 20);
+        const baseDepth = toSceneLength(platform.depthA - 40);
+        const baseMesh = MeshBuilder.CreateBox(
+          `carcass-base-${platform.id}`,
+          { width: baseWidth, height: carcassHeightScene, depth: baseDepth },
+          this.scene
+        );
+        baseMesh.position = new Vector3(
+          toSceneLength(platform.position.x + platform.lengthA / 2),
+          carcassHeightScene / 2,
+          toSceneLength(platform.position.z + platform.depthA / 2 - 10)
+        );
+        baseMesh.material = this.carcassMaterial;
+        baseMesh.isPickable = false;
+        this.carcassMeshes.push(baseMesh);
+
+        const leftInset = Math.min(platform.depthB, platform.lengthA / 2);
+        const rightInset = Math.min(platform.depthB, platform.lengthA / 2);
+        const legLength = Math.max(0, platform.lengthB - platform.depthA - 20);
+        if (legLength > 0) {
+          const leftMesh = MeshBuilder.CreateBox(
+            `carcass-left-${platform.id}`,
+            { width: toSceneLength(leftInset - 20), height: carcassHeightScene, depth: toSceneLength(legLength) },
+            this.scene
+          );
+          leftMesh.position = new Vector3(
+            toSceneLength(platform.position.x + leftInset / 2 - 10),
+            carcassHeightScene / 2,
+            toSceneLength(platform.position.z + platform.depthA + legLength / 2)
+          );
+          leftMesh.material = this.carcassMaterial;
+          leftMesh.isPickable = false;
+          this.carcassMeshes.push(leftMesh);
+
+          const rightMesh = MeshBuilder.CreateBox(
+            `carcass-right-${platform.id}`,
+            { width: toSceneLength(rightInset - 20), height: carcassHeightScene, depth: toSceneLength(legLength) },
+            this.scene
+          );
+          rightMesh.position = new Vector3(
+            toSceneLength(platform.position.x + platform.lengthA - rightInset / 2 + 10),
+            carcassHeightScene / 2,
+            toSceneLength(platform.position.z + platform.depthA + legLength / 2)
+          );
+          rightMesh.material = this.carcassMaterial;
+          rightMesh.isPickable = false;
+          this.carcassMeshes.push(rightMesh);
         }
       }
 
@@ -209,7 +273,6 @@ export class PlatformRenderer {
           bsMesh.isPickable = false;
           this.backsplashMeshes.push(bsMesh);
         } else if (platform.shape === "l-shaped") {
-          // Backsplash A (along back wall X)
           const bsMeshA = MeshBuilder.CreateBox(
             `bs-A-${platform.id}`,
             {
@@ -228,7 +291,6 @@ export class PlatformRenderer {
           bsMeshA.isPickable = false;
           this.backsplashMeshes.push(bsMeshA);
 
-          // Backsplash B (along left wall Z)
           const bsMeshB = MeshBuilder.CreateBox(
             `bs-B-${platform.id}`,
             {
@@ -246,6 +308,52 @@ export class PlatformRenderer {
           bsMeshB.material = this.backsplashMaterial;
           bsMeshB.isPickable = false;
           this.backsplashMeshes.push(bsMeshB);
+        } else if (platform.shape === "u-shaped") {
+          const bsBase = MeshBuilder.CreateBox(
+            `bs-base-${platform.id}`,
+            {
+              width: toSceneLength(platform.lengthA),
+              height: bsHeightScene,
+              depth: bsThickScene,
+            },
+            this.scene
+          );
+          bsBase.position = new Vector3(
+            toSceneLength(platform.position.x + platform.lengthA / 2),
+            workingHeightScene + bsHeightScene / 2,
+            toSceneLength(platform.position.z + bsThickScene / 2)
+          );
+          bsBase.material = this.backsplashMaterial;
+          bsBase.isPickable = false;
+          this.backsplashMeshes.push(bsBase);
+
+          const leftB = MeshBuilder.CreateBox(
+            `bs-left-${platform.id}`,
+            { width: bsThickScene, height: bsHeightScene, depth: toSceneLength(platform.lengthB) },
+            this.scene
+          );
+          leftB.position = new Vector3(
+            toSceneLength(platform.position.x + bsThickScene / 2),
+            workingHeightScene + bsHeightScene / 2,
+            toSceneLength(platform.position.z + platform.lengthB / 2)
+          );
+          leftB.material = this.backsplashMaterial;
+          leftB.isPickable = false;
+          this.backsplashMeshes.push(leftB);
+
+          const rightB = MeshBuilder.CreateBox(
+            `bs-right-${platform.id}`,
+            { width: bsThickScene, height: bsHeightScene, depth: toSceneLength(platform.lengthB) },
+            this.scene
+          );
+          rightB.position = new Vector3(
+            toSceneLength(platform.position.x + platform.lengthA - bsThickScene / 2),
+            workingHeightScene + bsHeightScene / 2,
+            toSceneLength(platform.position.z + platform.lengthB / 2)
+          );
+          rightB.material = this.backsplashMaterial;
+          rightB.isPickable = false;
+          this.backsplashMeshes.push(rightB);
         }
       }
 
@@ -357,7 +465,63 @@ export class PlatformRenderer {
           this.dimensionLineMeshes.push(dimMesh);
         }
       }
+
+      this.groupPlatformMeshes(platform, meshStarts);
     }
+  }
+
+  private getPlatformMaterial(
+    platform: CountertopPlatform,
+    baseMaterial: StandardMaterial
+  ): StandardMaterial {
+    const catalogMaterial = SAMPLE_MATERIALS.find((material) => material.id === platform.materialId);
+    if (!platform.color && !catalogMaterial?.baseColor) return baseMaterial;
+
+    const material = baseMaterial.clone(`slab-${platform.id}-material`);
+    if (!material) return baseMaterial;
+    if (catalogMaterial?.baseColor) {
+      material.diffuseColor = Color3.FromHexString(catalogMaterial.baseColor);
+    }
+    if (platform.color) material.diffuseColor = Color3.FromHexString(platform.color);
+    this.customMaterials.push(material);
+    return material;
+  }
+
+  private groupPlatformMeshes(
+    platform: CountertopPlatform,
+    starts: { slabs: number; carcasses: number; backsplashes: number; seams: number; dimensions: number; handles: number }
+  ): void {
+    const root = new TransformNode(`platform-root-${platform.id}`, this.scene);
+    const width = platform.shape === "straight" ? platform.length : platform.lengthA;
+    const depth = platform.shape === "straight" ? platform.depth : platform.lengthB;
+    const center = new Vector3(
+      toSceneLength(platform.position.x + width / 2),
+      toSceneLength(platform.workingHeight / 2),
+      toSceneLength(platform.position.z + depth / 2)
+    );
+    const rotation = platform.rotation ?? { x: 0, y: 0, z: 0 };
+    root.position.copyFrom(center);
+    root.metadata = { objectId: platform.id, locked: platform.locked === true };
+    root.rotation.set(
+      rotation.x * Math.PI / 180,
+      rotation.y * Math.PI / 180,
+      rotation.z * Math.PI / 180
+    );
+    root.setEnabled(platform.visible !== false);
+    const relatedMeshes = [
+      ...this.slabMeshes.slice(starts.slabs),
+      ...this.carcassMeshes.slice(starts.carcasses),
+      ...this.backsplashMeshes.slice(starts.backsplashes),
+      ...this.seamLineMeshes.slice(starts.seams),
+      ...this.dimensionLineMeshes.slice(starts.dimensions),
+      ...this.handleMeshes.slice(starts.handles),
+    ];
+    for (const mesh of relatedMeshes) {
+      mesh.parent = root;
+      mesh.position.subtractInPlace(center);
+      mesh.visibility = platform.opacity ?? 1;
+    }
+    this.platformRoots.set(platform.id, root);
   }
 
   private clearMeshes(): void {
@@ -378,6 +542,27 @@ export class PlatformRenderer {
 
     for (const m of this.handleMeshes) m.dispose();
     this.handleMeshes = [];
+
+    for (const root of this.platformRoots.values()) root.dispose(false, false);
+    this.platformRoots.clear();
+    for (const material of this.customMaterials) material.dispose(false, false);
+    this.customMaterials = [];
+  }
+
+  public setInteriorView(enabled: boolean): void {
+    const interiorColor = new Color3(0.78, 0.82, 0.88);
+    const interiorSelectedColor = new Color3(0.7, 0.78, 0.95);
+
+    this.slabMaterial.diffuseColor = enabled ? interiorColor : this.slabDefaultColor;
+    this.slabSelectedMaterial.diffuseColor = enabled ? interiorSelectedColor : this.slabSelectedDefaultColor;
+    this.slabMaterial.alpha = enabled ? 0.98 : 1;
+    this.slabSelectedMaterial.alpha = enabled ? 0.98 : 1;
+
+    for (const mesh of this.slabMeshes) {
+      if (mesh.material) {
+        mesh.material.alpha = enabled ? 0.98 : 1;
+      }
+    }
   }
 
   public dispose(): void {
@@ -387,5 +572,9 @@ export class PlatformRenderer {
     this.carcassMaterial.dispose();
     this.backsplashMaterial.dispose();
     this.handleMaterial.dispose();
+  }
+
+  public getTransformNode(platformId: string): TransformNode | null {
+    return this.platformRoots.get(platformId) ?? null;
   }
 }

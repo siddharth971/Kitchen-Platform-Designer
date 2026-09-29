@@ -29,7 +29,17 @@ export interface Cutout {
   sourceObjectId?: string;
 }
 
-export interface CountertopPlatform {
+export interface EditableObjectProperties {
+  rotation?: Point3D; // Euler angles in degrees
+  materialId?: string;
+  color?: string;
+  opacity?: number; // 0 to 1
+  visible?: boolean;
+  locked?: boolean;
+  textureId?: string;
+}
+
+export interface CountertopPlatform extends EditableObjectProperties {
   id: string;
   name: string;
   shape: PlatformShape;
@@ -77,8 +87,9 @@ export interface SeamLine {
   warning?: string;
 }
 
-export interface Cabinet {
+export interface Cabinet extends EditableObjectProperties {
   id: string;
+  name?: string;
   type: "base" | "wall" | "tall";
   position: Point3D;
   width: number;
@@ -90,7 +101,7 @@ export interface Cabinet {
   plinthHeight?: number;
 }
 
-export interface ApplianceInstance {
+export interface ApplianceInstance extends EditableObjectProperties {
   id: string;
   catalogId: string;
   name: string;
@@ -103,7 +114,7 @@ export interface ApplianceInstance {
   drainPointRequired?: boolean;
 }
 
-export interface SinkInstance {
+export interface SinkInstance extends EditableObjectProperties {
   id: string;
   catalogId: string;
   name: string;
@@ -118,7 +129,7 @@ export interface SinkInstance {
   platformId?: string;
 }
 
-export interface HobInstance {
+export interface HobInstance extends EditableObjectProperties {
   id: string;
   catalogId: string;
   name: string;
@@ -141,4 +152,6 @@ export interface UtilityPoint {
   y: number;
   z: number;
   notes?: string;
+  rotation?: Point3D;
+  scale?: Point3D;
 }

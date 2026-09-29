@@ -60,6 +60,7 @@ export function TopBar() {
 
   const cameraModes: { id: CameraPresetMode; label: string }[] = [
     { id: "perspective", label: "Perspective (3D)" },
+    { id: "inside", label: "Inside View" },
     { id: "top", label: "Top View (Plan)" },
     { id: "front", label: "Front View (South)" },
     { id: "left", label: "Left View (West)" },

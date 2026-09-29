@@ -2,6 +2,7 @@ import type { StateCreator } from "zustand";
 
 export type CameraPresetMode =
   | "perspective"
+  | "inside"
   | "top"
   | "front"
   | "left"
@@ -16,7 +17,7 @@ export interface CameraSlice {
 }
 
 export const createCameraSlice: StateCreator<CameraSlice, [], [], CameraSlice> = (set) => ({
-  cameraMode: "perspective",
+  cameraMode: "inside",
   fitTrigger: 0,
 
   setCameraMode: (cameraMode) => set({ cameraMode }),

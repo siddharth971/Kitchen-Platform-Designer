@@ -34,14 +34,33 @@ export function computePlatformFootprint(platform: CountertopPlatform): Point2D[
     const lenB = platform.lengthB;
     const depthB = platform.depthB + ox;
 
-    // 6-vertex unified L-shape footprint with corner at (posX, posZ)
     return [
-      { x: posX, z: posZ },                 // V0: outside corner
-      { x: posX + lenA, z: posZ },          // V1: end of run A
-      { x: posX + lenA, z: posZ + depthA }, // V2: front corner of run A
-      { x: posX + depthB, z: posZ + depthA },// V3: inside corner!
-      { x: posX + depthB, z: posZ + lenB }, // V4: front corner of run B
-      { x: posX, z: posZ + lenB },          // V5: end of run B
+      { x: posX, z: posZ },
+      { x: posX + lenA, z: posZ },
+      { x: posX + lenA, z: posZ + depthA },
+      { x: posX + depthB, z: posZ + depthA },
+      { x: posX + depthB, z: posZ + lenB },
+      { x: posX, z: posZ + lenB },
+    ];
+  }
+
+  if (shape === "u-shaped") {
+    const lenA = platform.lengthA;
+    const depthA = platform.depthA + ox;
+    const lenB = platform.lengthB;
+    const depthB = platform.depthB + ox;
+    const leftInset = Math.min(depthB, lenA / 2);
+    const rightInset = Math.min(depthB, lenA / 2);
+
+    return [
+      { x: posX, z: posZ },
+      { x: posX + lenA, z: posZ },
+      { x: posX + lenA, z: posZ + depthA },
+      { x: posX + lenA - rightInset, z: posZ + depthA },
+      { x: posX + lenA - rightInset, z: posZ + lenB },
+      { x: posX + leftInset, z: posZ + lenB },
+      { x: posX + leftInset, z: posZ + depthA },
+      { x: posX, z: posZ + depthA },
     ];
   }
 
@@ -134,7 +153,6 @@ export function computePlatformSeams(
   const posZ = platform.position.z;
 
   if (platform.shape === "l-shaped") {
-    // 1. Corner seam
     if (platform.cornerStyle === "miter") {
       seams.push({
         id: `seam-corner-${platform.id}`,
@@ -145,7 +163,6 @@ export function computePlatformSeams(
         isValid: true,
       });
     } else {
-      // Standard square corner join: seam across leg A at depthB
       seams.push({
         id: `seam-corner-${platform.id}`,
         platformId: platform.id,
@@ -156,7 +173,6 @@ export function computePlatformSeams(
       });
     }
 
-    // 2. Length-based seams on Leg A (run after the corner)
     const legARun = platform.lengthA - platform.depthB;
     if (legARun > maxPieceLengthMm) {
       const seamX = posX + platform.depthB + Math.round(legARun / 2);
@@ -170,7 +186,6 @@ export function computePlatformSeams(
       });
     }
 
-    // 3. Length-based seams on Leg B
     const legBRun = platform.lengthB - platform.depthA;
     if (legBRun > maxPieceLengthMm) {
       const seamZ = posZ + platform.depthA + Math.round(legBRun / 2);
@@ -183,6 +198,25 @@ export function computePlatformSeams(
         isValid: true,
       });
     }
+  } else if (platform.shape === "u-shaped") {
+    const leftLegX = posX + Math.min(platform.depthB, platform.lengthA / 2);
+    const rightLegX = posX + platform.lengthA - Math.min(platform.depthB, platform.lengthA / 2);
+    seams.push({
+      id: `seam-left-${platform.id}`,
+      platformId: platform.id,
+      start: { x: leftLegX, z: posZ },
+      end: { x: leftLegX, z: posZ + platform.depthA },
+      reason: "corner-joint",
+      isValid: true,
+    });
+    seams.push({
+      id: `seam-right-${platform.id}`,
+      platformId: platform.id,
+      start: { x: rightLegX, z: posZ },
+      end: { x: rightLegX, z: posZ + platform.depthA },
+      reason: "corner-joint",
+      isValid: true,
+    });
   } else {
     // Straight platform seams
     if (platform.length > maxPieceLengthMm) {
@@ -303,7 +337,6 @@ export function decomposePlatformIntoPieces(
       });
     }
   } else if (platform.shape === "l-shaped") {
-    // Piece 1: Corner + Run A piece
     const cornerRunA = platform.lengthA;
     pieces.push({
       id: `${platform.id}-runA`,
@@ -322,7 +355,6 @@ export function decomposePlatformIntoPieces(
       edgeProfileId: platform.edgeProfileId,
     });
 
-    // Piece 2: Run B piece (butting against Run A)
     const runBLen = platform.lengthB - platform.depthA;
     pieces.push({
       id: `${platform.id}-runB`,
@@ -338,6 +370,62 @@ export function decomposePlatformIntoPieces(
       depthMm: platform.depthB,
       thicknessMm: platform.slabThickness,
       areaSqMm: runBLen * platform.depthB,
+      edgeProfileId: platform.edgeProfileId,
+    });
+  } else if (platform.shape === "u-shaped") {
+    const leftInset = Math.min(platform.depthB, platform.lengthA / 2);
+    const rightInset = Math.min(platform.depthB, platform.lengthA / 2);
+    const baseRunLength = platform.lengthA;
+    const legRunLength = Math.max(0, platform.lengthB - platform.depthA);
+
+    pieces.push({
+      id: `${platform.id}-base`,
+      platformId: platform.id,
+      label: "Piece 1 (Base)",
+      polygon: [
+        { x: posX, z: posZ },
+        { x: posX + baseRunLength, z: posZ },
+        { x: posX + baseRunLength, z: posZ + platform.depthA },
+        { x: posX, z: posZ + platform.depthA },
+      ],
+      lengthMm: baseRunLength,
+      depthMm: platform.depthA,
+      thicknessMm: platform.slabThickness,
+      areaSqMm: baseRunLength * platform.depthA,
+      edgeProfileId: platform.edgeProfileId,
+    });
+
+    pieces.push({
+      id: `${platform.id}-left-leg`,
+      platformId: platform.id,
+      label: "Piece 2 (Left Leg)",
+      polygon: [
+        { x: posX, z: posZ + platform.depthA },
+        { x: posX + leftInset, z: posZ + platform.depthA },
+        { x: posX + leftInset, z: posZ + platform.lengthB },
+        { x: posX, z: posZ + platform.lengthB },
+      ],
+      lengthMm: legRunLength,
+      depthMm: leftInset,
+      thicknessMm: platform.slabThickness,
+      areaSqMm: legRunLength * leftInset,
+      edgeProfileId: platform.edgeProfileId,
+    });
+
+    pieces.push({
+      id: `${platform.id}-right-leg`,
+      platformId: platform.id,
+      label: "Piece 3 (Right Leg)",
+      polygon: [
+        { x: posX + platform.lengthA - rightInset, z: posZ + platform.depthA },
+        { x: posX + platform.lengthA, z: posZ + platform.depthA },
+        { x: posX + platform.lengthA, z: posZ + platform.lengthB },
+        { x: posX + platform.lengthA - rightInset, z: posZ + platform.lengthB },
+      ],
+      lengthMm: legRunLength,
+      depthMm: rightInset,
+      thicknessMm: platform.slabThickness,
+      areaSqMm: legRunLength * rightInset,
       edgeProfileId: platform.edgeProfileId,
     });
   }
@@ -385,6 +473,8 @@ export function calculatePlatformQuantities(
       backsplashLengthMm = platform.length;
     } else if (platform.shape === "l-shaped") {
       backsplashLengthMm = platform.lengthA + platform.lengthB;
+    } else if (platform.shape === "u-shaped") {
+      backsplashLengthMm = platform.lengthA + 2 * platform.lengthB;
     }
   }
   const backsplashAreaSqMm =
@@ -393,13 +483,14 @@ export function calculatePlatformQuantities(
   // Finished edge length (front edges and exposed returns)
   let finishedEdgeLengthMm = 0;
   if (platform.shape === "straight") {
-    // Front edge + 2 exposed sides
     finishedEdgeLengthMm = platform.length + platform.depth * 2;
   } else if (platform.shape === "l-shaped") {
-    // Front edge A + Front edge B + 2 outer ends
     finishedEdgeLengthMm =
       platform.lengthA - platform.depthB + (platform.lengthB - platform.depthA) +
       platform.depthA + platform.depthB;
+  } else if (platform.shape === "u-shaped") {
+    finishedEdgeLengthMm =
+      platform.lengthA + platform.lengthB * 2;
   }
 
   const seams = computePlatformSeams(platform);

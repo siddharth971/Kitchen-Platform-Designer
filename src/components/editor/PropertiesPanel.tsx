@@ -6,7 +6,7 @@ import { formatLength, parseLength, formatArea, formatRunningLength } from "@/co
 import { getWallLength, calculateWallAreas } from "@/core/geometry/wall";
 import { calculatePlatformQuantities } from "@/core/geometry/platform";
 import { computeEdgeClearance } from "@/core/geometry/cutout";
-import { SAMPLE_MATERIALS, SAMPLE_EDGE_PROFILES } from "@/data/presets";
+import { SAMPLE_EDGE_PROFILES } from "@/data/presets";
 import { generateId } from "@/lib/id";
 import type { WallOpening } from "@/types/project";
 import type { PlatformShape, CornerStyle, Cutout } from "@/types/kitchen";
@@ -35,6 +35,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { UniversalObjectControls } from "./UniversalObjectControls";
 
 export function PropertiesPanel() {
   const project = useAppStore((state) => state.project);
@@ -56,7 +57,6 @@ export function PropertiesPanel() {
   const removeHob = useAppStore((state) => state.removeHob);
   const updateCabinet = useAppStore((state) => state.updateCabinet);
   const removeCabinet = useAppStore((state) => state.removeCabinet);
-  const updateAppliance = useAppStore((state) => state.updateAppliance);
   const removeAppliance = useAppStore((state) => state.removeAppliance);
   const updateUtilityPoint = useAppStore((state) => state.updateUtilityPoint);
   const removeUtilityPoint = useAppStore((state) => state.removeUtilityPoint);
@@ -160,8 +160,10 @@ export function PropertiesPanel() {
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6 text-xs">
+        <UniversalObjectControls />
+
         {/* PLATFORM PROPERTIES */}
-        {selectedType === "platform" && selectedPlatform && (
+        {selectedType === "platform" && selectedPlatform && !selectedPlatform.locked && (
           <div className="space-y-4">
             <div>
               <div className="flex items-center justify-between mb-1">
@@ -179,7 +181,7 @@ export function PropertiesPanel() {
             <div>
               <Label className="text-xs text-muted-foreground block mb-1.5">Platform Shape</Label>
               <div className="grid grid-cols-2 gap-1.5 bg-muted/60 p-1 rounded-md border border-border/50">
-                {(["straight", "l-shaped"] as PlatformShape[]).map((shp) => (
+                {(["straight", "l-shaped", "u-shaped"] as PlatformShape[]).map((shp) => (
                   <button
                     key={shp}
                     onClick={() => {
@@ -200,65 +202,9 @@ export function PropertiesPanel() {
 
             <Separator />
 
-            {/* Straight Platform Dimensions */}
-            {selectedPlatform.shape === "straight" && (
-              <div className="space-y-2.5">
-                <div className="grid grid-cols-2 gap-2 items-center">
-                  <Label className="text-xs text-muted-foreground">Length (X)</Label>
-                  <Input
-                    defaultValue={formatLength(selectedPlatform.length, displayUnit)}
-                    key={`plen-${selectedPlatform.id}-${selectedPlatform.length}-${displayUnit}`}
-                    className="h-8 text-xs font-mono"
-                    onBlur={(e) =>
-                      handleDimensionCommit(e.target.value, (val) =>
-                        updatePlatform(selectedPlatform.id, { length: val })
-                      )
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                    }}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 items-center">
-                  <Label className="text-xs text-muted-foreground">Depth (Z)</Label>
-                  <Input
-                    defaultValue={formatLength(selectedPlatform.depth, displayUnit)}
-                    key={`pdepth-${selectedPlatform.id}-${selectedPlatform.depth}-${displayUnit}`}
-                    className="h-8 text-xs font-mono"
-                    onBlur={(e) =>
-                      handleDimensionCommit(e.target.value, (val) =>
-                        updatePlatform(selectedPlatform.id, { depth: val })
-                      )
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
             {/* L-shaped Platform Dimensions */}
-            {selectedPlatform.shape === "l-shaped" && (
+            {(selectedPlatform.shape === "l-shaped" || selectedPlatform.shape === "u-shaped") && (
               <div className="space-y-2.5">
-                <div className="grid grid-cols-2 gap-2 items-center">
-                  <Label className="text-xs text-muted-foreground">Run A Length (X)</Label>
-                  <Input
-                    defaultValue={formatLength(selectedPlatform.lengthA, displayUnit)}
-                    key={`pla-${selectedPlatform.id}-${selectedPlatform.lengthA}-${displayUnit}`}
-                    className="h-8 text-xs font-mono"
-                    onBlur={(e) =>
-                      handleDimensionCommit(e.target.value, (val) =>
-                        updatePlatform(selectedPlatform.id, { lengthA: val })
-                      )
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                    }}
-                  />
-                </div>
-
                 <div className="grid grid-cols-2 gap-2 items-center">
                   <Label className="text-xs text-muted-foreground">Run A Depth</Label>
                   <Input
@@ -268,23 +214,6 @@ export function PropertiesPanel() {
                     onBlur={(e) =>
                       handleDimensionCommit(e.target.value, (val) =>
                         updatePlatform(selectedPlatform.id, { depthA: val })
-                      )
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                    }}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 items-center">
-                  <Label className="text-xs text-muted-foreground">Run B Length (Z)</Label>
-                  <Input
-                    defaultValue={formatLength(selectedPlatform.lengthB, displayUnit)}
-                    key={`plb-${selectedPlatform.id}-${selectedPlatform.lengthB}-${displayUnit}`}
-                    className="h-8 text-xs font-mono"
-                    onBlur={(e) =>
-                      handleDimensionCommit(e.target.value, (val) =>
-                        updatePlatform(selectedPlatform.id, { lengthB: val })
                       )
                     }
                     onKeyDown={(e) => {
@@ -332,42 +261,7 @@ export function PropertiesPanel() {
 
             <Separator />
 
-            {/* Height & Slab Thickness */}
             <div className="space-y-2.5">
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Working Height</Label>
-                <Input
-                  defaultValue={formatLength(selectedPlatform.workingHeight, displayUnit)}
-                  key={`pwh-${selectedPlatform.id}-${selectedPlatform.workingHeight}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updatePlatform(selectedPlatform.id, { workingHeight: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Slab Thickness</Label>
-                <Input
-                  defaultValue={formatLength(selectedPlatform.slabThickness, displayUnit)}
-                  key={`pst-${selectedPlatform.id}-${selectedPlatform.slabThickness}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updatePlatform(selectedPlatform.id, { slabThickness: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">Front Overhang</Label>
                 <Input
@@ -392,24 +286,6 @@ export function PropertiesPanel() {
 
             {/* Material & Edge Profile Selection */}
             <div className="space-y-3">
-              <div>
-                <Label className="text-xs text-muted-foreground block mb-1">Countertop Material</Label>
-                <select
-                  value={selectedPlatform.materialId}
-                  onChange={(e) => {
-                    pushHistory(project);
-                    updatePlatform(selectedPlatform.id, { materialId: e.target.value });
-                  }}
-                  className="w-full h-8 text-xs border border-border rounded-md px-2 bg-background cursor-pointer"
-                >
-                  {SAMPLE_MATERIALS.map((mat) => (
-                    <option key={mat.id} value={mat.id}>
-                      {mat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div>
                 <Label className="text-xs text-muted-foreground block mb-1">Edge Profile</Label>
                 <select
@@ -1059,7 +935,7 @@ export function PropertiesPanel() {
         )}
 
         {/* SINK INSPECTOR */}
-        {selectedType === "sink" && selectedSink && (
+        {selectedType === "sink" && selectedSink && !selectedSink.locked && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -1081,60 +957,6 @@ export function PropertiesPanel() {
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
-            </div>
-
-            <div className="space-y-2.5">
-              <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Dimensions</h5>
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Width</Label>
-                <Input
-                  defaultValue={formatLength(selectedSink.width, displayUnit)}
-                  key={`sw-${selectedSink.id}-${selectedSink.width}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateSink(selectedSink.id, { width: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Depth</Label>
-                <Input
-                  defaultValue={formatLength(selectedSink.depth, displayUnit)}
-                  key={`sd-${selectedSink.id}-${selectedSink.depth}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateSink(selectedSink.id, { depth: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Bowl Depth</Label>
-                <Input
-                  defaultValue={formatLength(selectedSink.height, displayUnit)}
-                  key={`sh-${selectedSink.id}-${selectedSink.height}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateSink(selectedSink.id, { height: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
             </div>
 
             <Separator />
@@ -1178,51 +1000,11 @@ export function PropertiesPanel() {
 
             <Separator />
 
-            <div className="space-y-2.5">
-              <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Position</h5>
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Position X</Label>
-                <Input
-                  defaultValue={formatLength(selectedSink.position.x, displayUnit)}
-                  key={`spx-${selectedSink.id}-${selectedSink.position.x}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateSink(selectedSink.id, {
-                        position: { ...selectedSink.position, x: val },
-                      })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Position Z</Label>
-                <Input
-                  defaultValue={formatLength(selectedSink.position.z, displayUnit)}
-                  key={`spz-${selectedSink.id}-${selectedSink.position.z}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateSink(selectedSink.id, {
-                        position: { ...selectedSink.position, z: val },
-                      })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-            </div>
           </div>
         )}
 
         {/* HOB INSPECTOR */}
-        {selectedType === "hob" && selectedHob && (
+        {selectedType === "hob" && selectedHob && !selectedHob.locked && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -1253,40 +1035,6 @@ export function PropertiesPanel() {
 
             <div className="space-y-2.5">
               <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Dimensions</h5>
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Width</Label>
-                <Input
-                  defaultValue={formatLength(selectedHob.width, displayUnit)}
-                  key={`hw-${selectedHob.id}-${selectedHob.width}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateHob(selectedHob.id, { width: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Depth</Label>
-                <Input
-                  defaultValue={formatLength(selectedHob.depth, displayUnit)}
-                  key={`hd-${selectedHob.id}-${selectedHob.depth}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateHob(selectedHob.id, { depth: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-2 items-center">
                 <Label className="text-xs text-muted-foreground">Burner Count</Label>
                 <select
@@ -1347,51 +1095,11 @@ export function PropertiesPanel() {
 
             <Separator />
 
-            <div className="space-y-2.5">
-              <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Position</h5>
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Position X</Label>
-                <Input
-                  defaultValue={formatLength(selectedHob.position.x, displayUnit)}
-                  key={`hpx-${selectedHob.id}-${selectedHob.position.x}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateHob(selectedHob.id, {
-                        position: { ...selectedHob.position, x: val },
-                      })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Position Z</Label>
-                <Input
-                  defaultValue={formatLength(selectedHob.position.z, displayUnit)}
-                  key={`hpz-${selectedHob.id}-${selectedHob.position.z}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateHob(selectedHob.id, {
-                        position: { ...selectedHob.position, z: val },
-                      })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-            </div>
           </div>
         )}
 
         {/* CABINET INSPECTOR */}
-        {selectedType === "cabinet" && selectedCabinet && (
+        {selectedType === "cabinet" && selectedCabinet && !selectedCabinet.locked && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -1417,57 +1125,6 @@ export function PropertiesPanel() {
 
             <div className="space-y-2.5">
               <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Dimensions</h5>
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Width</Label>
-                <Input
-                  defaultValue={formatLength(selectedCabinet.width, displayUnit)}
-                  key={`cw-${selectedCabinet.id}-${selectedCabinet.width}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateCabinet(selectedCabinet.id, { width: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Depth</Label>
-                <Input
-                  defaultValue={formatLength(selectedCabinet.depth, displayUnit)}
-                  key={`cd-${selectedCabinet.id}-${selectedCabinet.depth}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateCabinet(selectedCabinet.id, { depth: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Height</Label>
-                <Input
-                  defaultValue={formatLength(selectedCabinet.height, displayUnit)}
-                  key={`ch-${selectedCabinet.id}-${selectedCabinet.height}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateCabinet(selectedCabinet.id, { height: val })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
               {selectedCabinet.plinthHeight !== undefined && (
                 <div className="grid grid-cols-2 gap-2 items-center">
                   <Label className="text-xs text-muted-foreground">Plinth</Label>
@@ -1488,53 +1145,11 @@ export function PropertiesPanel() {
               )}
             </div>
 
-            <Separator />
-
-            <div className="space-y-2.5">
-              <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Position</h5>
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Position X</Label>
-                <Input
-                  defaultValue={formatLength(selectedCabinet.position.x, displayUnit)}
-                  key={`cpx-${selectedCabinet.id}-${selectedCabinet.position.x}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateCabinet(selectedCabinet.id, {
-                        position: { ...selectedCabinet.position, x: val },
-                      })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Position Z</Label>
-                <Input
-                  defaultValue={formatLength(selectedCabinet.position.z, displayUnit)}
-                  key={`cpz-${selectedCabinet.id}-${selectedCabinet.position.z}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateCabinet(selectedCabinet.id, {
-                        position: { ...selectedCabinet.position, z: val },
-                      })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-            </div>
           </div>
         )}
 
         {/* APPLIANCE INSPECTOR */}
-        {selectedType === "appliance" && selectedAppliance && (
+        {selectedType === "appliance" && selectedAppliance && !selectedAppliance.locked && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -1556,66 +1171,6 @@ export function PropertiesPanel() {
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
-            </div>
-
-            <div className="space-y-2.5">
-              <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Dimensions</h5>
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Width</Label>
-                <Input
-                  defaultValue={formatLength(selectedAppliance.dimensions.width, displayUnit)}
-                  key={`apw-${selectedAppliance.id}-${selectedAppliance.dimensions.width}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateAppliance(selectedAppliance.id, {
-                        dimensions: { ...selectedAppliance.dimensions, width: val },
-                      })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Depth</Label>
-                <Input
-                  defaultValue={formatLength(selectedAppliance.dimensions.depth, displayUnit)}
-                  key={`apd-${selectedAppliance.id}-${selectedAppliance.dimensions.depth}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateAppliance(selectedAppliance.id, {
-                        dimensions: { ...selectedAppliance.dimensions, depth: val },
-                      })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <Label className="text-xs text-muted-foreground">Height</Label>
-                <Input
-                  defaultValue={formatLength(selectedAppliance.dimensions.height, displayUnit)}
-                  key={`aph-${selectedAppliance.id}-${selectedAppliance.dimensions.height}-${displayUnit}`}
-                  className="h-8 text-xs font-mono"
-                  onBlur={(e) =>
-                    handleDimensionCommit(e.target.value, (val) =>
-                      updateAppliance(selectedAppliance.id, {
-                        dimensions: { ...selectedAppliance.dimensions, height: val },
-                      })
-                    )
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  }}
-                />
-              </div>
             </div>
 
             <Separator />

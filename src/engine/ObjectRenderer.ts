@@ -6,12 +6,14 @@
  */
 
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
+import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { Color3 } from "@babylonjs/core/Maths/math.color";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Mesh } from "@babylonjs/core/Meshes/mesh";
 import type { Scene } from "@babylonjs/core/scene";
-import type { SinkInstance, HobInstance, Cabinet, ApplianceInstance, UtilityPoint } from "@/types/kitchen";
+import type { SinkInstance, HobInstance, Cabinet, ApplianceInstance, UtilityPoint, EditableObjectProperties } from "@/types/kitchen";
+import { SAMPLE_MATERIALS } from "@/data/presets";
 import { toSceneLength } from "./coordinates";
 
 export class ObjectRenderer {
@@ -21,6 +23,8 @@ export class ObjectRenderer {
   private cabinetMeshes: Mesh[] = [];
   private applianceMeshes: Mesh[] = [];
   private utilityMeshes: Mesh[] = [];
+  private objectRoots = new Map<string, TransformNode>();
+  private customMaterials: StandardMaterial[] = [];
 
   // Materials
   private sinkMaterial: StandardMaterial;
@@ -116,6 +120,7 @@ export class ObjectRenderer {
 
   private renderSinks(sinks: SinkInstance[], selectedId: string | null): void {
     for (const sink of sinks) {
+      const meshStart = this.sinkMeshes.length;
       const isSelected = sink.id === selectedId;
       const w = toSceneLength(sink.width);
       const d = toSceneLength(sink.depth);
@@ -128,7 +133,7 @@ export class ObjectRenderer {
         toSceneLength(sink.position.y) - h / 2,
         toSceneLength(sink.position.z + sink.depth / 2)
       );
-      body.material = isSelected ? this.selectedMaterial : this.sinkMaterial;
+      body.material = this.getStyledMaterial(sink, isSelected ? this.selectedMaterial : this.sinkMaterial, `sink-${sink.id}`);
       body.metadata = { objectId: sink.id, type: "sink" };
       body.isPickable = true;
       this.sinkMeshes.push(body);
@@ -148,11 +153,17 @@ export class ObjectRenderer {
       faucet.material = this.sinkMaterial;
       faucet.isPickable = false;
       this.sinkMeshes.push(faucet);
+      this.groupObjectMeshes(this.sinkMeshes, meshStart, sink.id, new Vector3(
+        toSceneLength(sink.position.x + sink.width / 2),
+        toSceneLength(sink.position.y),
+        toSceneLength(sink.position.z + sink.depth / 2)
+      ), sink);
     }
   }
 
   private renderHobs(hobs: HobInstance[], selectedId: string | null): void {
     for (const hob of hobs) {
+      const meshStart = this.hobMeshes.length;
       const isSelected = hob.id === selectedId;
       const w = toSceneLength(hob.width);
       const d = toSceneLength(hob.depth);
@@ -165,7 +176,7 @@ export class ObjectRenderer {
         toSceneLength(hob.position.y) + h / 2,
         toSceneLength(hob.position.z + hob.depth / 2)
       );
-      body.material = isSelected ? this.selectedMaterial : this.hobMaterial;
+      body.material = this.getStyledMaterial(hob, isSelected ? this.selectedMaterial : this.hobMaterial, `hob-${hob.id}`);
       body.metadata = { objectId: hob.id, type: "hob" };
       body.isPickable = true;
       this.hobMeshes.push(body);
@@ -197,11 +208,17 @@ export class ObjectRenderer {
           this.hobMeshes.push(burner);
         }
       }
+      this.groupObjectMeshes(this.hobMeshes, meshStart, hob.id, new Vector3(
+        toSceneLength(hob.position.x + hob.width / 2),
+        toSceneLength(hob.position.y + hob.height / 2),
+        toSceneLength(hob.position.z + hob.depth / 2)
+      ), hob);
     }
   }
 
   private renderCabinets(cabinets: Cabinet[], selectedId: string | null): void {
     for (const cab of cabinets) {
+      const meshStart = this.cabinetMeshes.length;
       const isSelected = cab.id === selectedId;
       const w = toSceneLength(cab.width);
       const h = toSceneLength(cab.height);
@@ -216,7 +233,7 @@ export class ObjectRenderer {
         // Wall cabinets mount at typical height (~1400mm from floor)
         posY = toSceneLength(cab.position.y) + (h - plinthH) / 2;
       } else {
-        posY = plinthH + (h - plinthH) / 2;
+        posY = toSceneLength(cab.position.y) + plinthH + (h - plinthH) / 2;
       }
 
       body.position = new Vector3(
@@ -226,7 +243,7 @@ export class ObjectRenderer {
       );
 
       const mat = cab.type === "wall" ? this.cabinetWallMaterial : this.cabinetBaseMaterial;
-      body.material = isSelected ? this.selectedMaterial : mat;
+      body.material = this.getStyledMaterial(cab, isSelected ? this.selectedMaterial : mat, `cabinet-${cab.id}`);
       body.metadata = { objectId: cab.id, type: "cabinet" };
       body.isPickable = true;
       this.cabinetMeshes.push(body);
@@ -271,11 +288,17 @@ export class ObjectRenderer {
           this.cabinetMeshes.push(line);
         }
       }
+      this.groupObjectMeshes(this.cabinetMeshes, meshStart, cab.id, new Vector3(
+        toSceneLength(cab.position.x + cab.width / 2),
+        toSceneLength(posY),
+        toSceneLength(cab.position.z + cab.depth / 2)
+      ), cab);
     }
   }
 
   private renderAppliances(appliances: ApplianceInstance[], selectedId: string | null): void {
     for (const appl of appliances) {
+      const meshStart = this.applianceMeshes.length;
       const isSelected = appl.id === selectedId;
       const w = toSceneLength(appl.dimensions.width);
       const h = toSceneLength(appl.dimensions.height);
@@ -287,11 +310,60 @@ export class ObjectRenderer {
         toSceneLength(appl.position.y) + h / 2,
         toSceneLength(appl.position.z + appl.dimensions.depth / 2)
       );
-      body.material = isSelected ? this.selectedMaterial : this.applianceMaterial;
+      body.material = this.getStyledMaterial(appl, isSelected ? this.selectedMaterial : this.applianceMaterial, `appliance-${appl.id}`);
       body.metadata = { objectId: appl.id, type: "appliance" };
       body.isPickable = true;
       this.applianceMeshes.push(body);
+      this.groupObjectMeshes(this.applianceMeshes, meshStart, appl.id, new Vector3(
+        toSceneLength(appl.position.x + appl.dimensions.width / 2),
+        toSceneLength(appl.position.y + appl.dimensions.height / 2),
+        toSceneLength(appl.position.z + appl.dimensions.depth / 2)
+      ), appl);
     }
+  }
+
+  private getStyledMaterial(
+    object: EditableObjectProperties,
+    base: StandardMaterial,
+    name: string
+  ): StandardMaterial {
+    const catalogMaterial = SAMPLE_MATERIALS.find((material) => material.id === object.materialId);
+    if (!object.color && !catalogMaterial?.baseColor) return base;
+
+    const material = base.clone(`${name}-material`);
+    if (!material) return base;
+    if (catalogMaterial?.baseColor) {
+      material.diffuseColor = Color3.FromHexString(catalogMaterial.baseColor);
+    }
+    if (object.color) material.diffuseColor = Color3.FromHexString(object.color);
+    this.customMaterials.push(material);
+    return material;
+  }
+
+  private groupObjectMeshes(
+    meshes: Mesh[],
+    startIndex: number,
+    id: string,
+    center: Vector3,
+    object: EditableObjectProperties
+  ): void {
+    const rotation = object.rotation ?? { x: 0, y: 0, z: 0 };
+    const root = new TransformNode(`object-root-${id}`, this.scene);
+    root.position.copyFrom(center);
+    root.metadata = { objectId: id, locked: object.locked === true };
+    root.rotation.set(
+      rotation.x * Math.PI / 180,
+      rotation.y * Math.PI / 180,
+      rotation.z * Math.PI / 180
+    );
+    root.setEnabled(object.visible !== false);
+
+    for (const mesh of meshes.slice(startIndex)) {
+      mesh.parent = root;
+      mesh.position.subtractInPlace(center);
+      mesh.visibility = object.opacity ?? 1;
+    }
+    this.objectRoots.set(id, root);
   }
 
   private getUtilityMaterial(type: UtilityPoint["type"]): StandardMaterial {
@@ -328,6 +400,17 @@ export class ObjectRenderer {
       indicator.metadata = { objectId: pt.id, type: "utility" };
       indicator.isPickable = true;
       this.utilityMeshes.push(indicator);
+
+      const root = new TransformNode(`object-root-${pt.id}`, this.scene);
+      root.position.copyFrom(indicator.position);
+      root.metadata = { objectId: pt.id, locked: false };
+      const rotation = pt.rotation ?? { x: 0, y: 0, z: 0 };
+      const scale = pt.scale ?? { x: 1, y: 1, z: 1 };
+      root.rotation.set(rotation.x * Math.PI / 180, rotation.y * Math.PI / 180, rotation.z * Math.PI / 180);
+      root.scaling.set(scale.x, scale.y, scale.z);
+      indicator.parent = root;
+      indicator.position.setAll(0);
+      this.objectRoots.set(pt.id, root);
     }
   }
 
@@ -343,6 +426,10 @@ export class ObjectRenderer {
       for (const m of arr) m.dispose();
       arr.length = 0;
     }
+    for (const root of this.objectRoots.values()) root.dispose(false, false);
+    this.objectRoots.clear();
+    for (const material of this.customMaterials) material.dispose(false, false);
+    this.customMaterials = [];
   }
 
   public dispose(): void {
@@ -359,5 +446,9 @@ export class ObjectRenderer {
     this.utilityGasMaterial.dispose();
     this.utilityChimneyMaterial.dispose();
     this.selectedMaterial.dispose();
+  }
+
+  public getTransformNode(objectId: string): TransformNode | null {
+    return this.objectRoots.get(objectId) ?? null;
   }
 }

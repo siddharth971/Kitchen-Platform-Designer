@@ -66,24 +66,27 @@ export function EditorLayout() {
         return;
       }
 
-      // Quick Camera presets: 1=Perspective, 2=Top, 3=Front, 4=Left, 5=Right, 6=Isometric, F=Fit
+      // Quick Camera presets: 1=Perspective, 2=Inside View, 3=Top, 4=Front, 5=Left, 6=Right, 7=Isometric, F=Fit
       switch (e.key) {
         case "1":
           setCameraMode("perspective");
           break;
         case "2":
-          setCameraMode("top");
+          setCameraMode("inside");
           break;
         case "3":
-          setCameraMode("front");
+          setCameraMode("top");
           break;
         case "4":
-          setCameraMode("left");
+          setCameraMode("front");
           break;
         case "5":
-          setCameraMode("right");
+          setCameraMode("left");
           break;
         case "6":
+          setCameraMode("right");
+          break;
+        case "7":
           setCameraMode("isometric");
           break;
         case "f":

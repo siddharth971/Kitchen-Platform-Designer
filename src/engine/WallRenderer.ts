@@ -1,6 +1,8 @@
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
+import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 import { Color3 } from "@babylonjs/core/Maths/math.color";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Mesh } from "@babylonjs/core/Meshes/mesh";
 import type { Scene } from "@babylonjs/core/scene";
 import type { Wall, Room } from "@/types/project";
@@ -13,11 +15,14 @@ export class WallRenderer {
   private floorMesh: Mesh | null = null;
   private ceilingMesh: Mesh | null = null;
   private openingFrameMeshes: Mesh[] = [];
+  private wallRoots = new Map<string, TransformNode>();
 
   private defaultWallMaterial: StandardMaterial;
   private selectedWallMaterial: StandardMaterial;
   private floorMaterial: StandardMaterial;
   private frameMaterial: StandardMaterial;
+  private hiddenWallIds: Set<string> = new Set();
+  private interiorViewEnabled = false;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -86,6 +91,8 @@ export class WallRenderer {
 
     // 2. Build Walls
     for (const wall of walls) {
+      const wallMeshStart = this.wallMeshes.length;
+      const frameMeshStart = this.openingFrameMeshes.length;
       const isSelected = selectedId === wall.id;
       const wallMat = isSelected ? this.selectedWallMaterial : this.defaultWallMaterial;
 
@@ -116,6 +123,7 @@ export class WallRenderer {
         mesh.isPickable = true;
 
         this.wallMeshes.push(mesh);
+        this.applyWallVisibility(mesh, wall.id);
       });
 
       // 3. Render opening frame trims (doors / windows)
@@ -153,8 +161,26 @@ export class WallRenderer {
           frameMesh.isPickable = true;
 
           this.openingFrameMeshes.push(frameMesh);
+          this.applyWallVisibility(frameMesh, wall.id);
         }
       }
+
+      const center = new Vector3(
+        toSceneLength((wall.start.x + wall.end.x) / 2),
+        toSceneLength(wall.height / 2),
+        toSceneLength((wall.start.z + wall.end.z) / 2)
+      );
+      const root = new TransformNode(`wall-root-${wall.id}`, this.scene);
+      root.position.copyFrom(center);
+      root.metadata = { objectId: wall.id, locked: false };
+      for (const mesh of [
+        ...this.wallMeshes.slice(wallMeshStart),
+        ...this.openingFrameMeshes.slice(frameMeshStart),
+      ]) {
+        mesh.parent = root;
+        mesh.position.subtractInPlace(center);
+      }
+      this.wallRoots.set(wall.id, root);
     }
   }
 
@@ -169,6 +195,9 @@ export class WallRenderer {
     }
     this.openingFrameMeshes = [];
 
+    for (const root of this.wallRoots.values()) root.dispose(false, false);
+    this.wallRoots.clear();
+
     if (this.floorMesh) {
       this.floorMesh.dispose();
       this.floorMesh = null;
@@ -180,11 +209,75 @@ export class WallRenderer {
     }
   }
 
+  public setInteriorView(enabled: boolean): void {
+    this.interiorViewEnabled = enabled;
+    const wallAlpha = enabled ? 0.22 : 1;
+    const floorAlpha = enabled ? 0.8 : 1;
+    const frameAlpha = enabled ? 0.55 : 1;
+
+    this.defaultWallMaterial.alpha = wallAlpha;
+    this.selectedWallMaterial.alpha = wallAlpha;
+    this.floorMaterial.alpha = floorAlpha;
+    this.frameMaterial.alpha = frameAlpha;
+
+    for (const mesh of this.wallMeshes) {
+      mesh.material = mesh.metadata?.type === "wall" ? this.defaultWallMaterial : mesh.material;
+      this.applyWallVisibility(mesh, mesh.metadata?.objectId ?? "");
+      if (mesh.material) {
+        mesh.material.alpha = wallAlpha;
+      }
+    }
+
+    if (this.floorMesh) {
+      this.floorMesh.material = this.floorMaterial;
+      this.floorMesh.visibility = enabled ? 0.9 : 1;
+      if (this.floorMesh.material) {
+        this.floorMesh.material.alpha = floorAlpha;
+      }
+    }
+
+    for (const mesh of this.openingFrameMeshes) {
+      this.applyWallVisibility(mesh, mesh.metadata?.objectId ?? "");
+      if (mesh.material) {
+        mesh.material.alpha = frameAlpha;
+      }
+    }
+  }
+
+  public setWallVisible(wallId: string, visible: boolean): void {
+    if (visible) {
+      this.hiddenWallIds.delete(wallId);
+    } else {
+      this.hiddenWallIds.add(wallId);
+    }
+
+    [...this.wallMeshes, ...this.openingFrameMeshes]
+      .filter((mesh) => mesh.metadata?.objectId === wallId)
+      .forEach((mesh) => this.applyWallVisibility(mesh, wallId));
+  }
+
+  public showAllWalls(): void {
+    this.hiddenWallIds.clear();
+    [...this.wallMeshes, ...this.openingFrameMeshes].forEach((mesh) => {
+      this.applyWallVisibility(mesh, mesh.metadata?.objectId ?? "");
+    });
+  }
+
+  private applyWallVisibility(mesh: Mesh, wallId: string): void {
+    const isHidden = this.hiddenWallIds.has(wallId);
+    mesh.isPickable = !isHidden;
+    mesh.visibility = isHidden ? 0.2 : this.interiorViewEnabled ? 0.3 : 1;
+  }
+
   public dispose(): void {
     this.clearMeshes();
     this.defaultWallMaterial.dispose();
     this.selectedWallMaterial.dispose();
     this.floorMaterial.dispose();
     this.frameMaterial.dispose();
+  }
+
+  public getTransformNode(wallId: string): TransformNode | null {
+    return this.wallRoots.get(wallId) ?? null;
   }
 }

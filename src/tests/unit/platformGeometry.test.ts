@@ -41,6 +41,16 @@ describe("core/geometry/platform (Golden Geometry Tests)", () => {
     depthB: 600,
   };
 
+  const uShapedPlatform: CountertopPlatform = {
+    ...straightPlatform,
+    id: "plat-3",
+    shape: "u-shaped",
+    lengthA: 2400,
+    depthA: 600,
+    lengthB: 1800,
+    depthB: 600,
+  };
+
   it("straight platform footprint area equals analytic area (2400 x 600 = 1,440,000 sq mm)", () => {
     const footprint = computePlatformFootprint(straightPlatform);
     expect(footprint).toHaveLength(4);
@@ -67,6 +77,18 @@ describe("core/geometry/platform (Golden Geometry Tests)", () => {
     // Triangulated area using earcut
     const { indices, triangulatedArea } = triangulateFootprint(footprint);
     expect(indices.length).toBe(12); // 4 triangles = 12 indices
+    expect(triangulatedArea).toBeCloseTo(analyticArea, 4);
+  });
+
+  it("U-shaped platform footprint creates a three-sided contour without overlap", () => {
+    const footprint = computePlatformFootprint(uShapedPlatform);
+    expect(footprint).toHaveLength(8);
+
+    const analyticArea = 2400 * 600 + 2 * (1800 - 600) * 600;
+    const computedArea = calculatePolygonArea(footprint);
+    expect(computedArea).toBe(analyticArea);
+
+    const { triangulatedArea } = triangulateFootprint(footprint);
     expect(triangulatedArea).toBeCloseTo(analyticArea, 4);
   });
 

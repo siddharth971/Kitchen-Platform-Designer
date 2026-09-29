@@ -20,6 +20,7 @@
   },
   "camera": {
     "perspective": "Perspective",
+    "inside": "Inside View",
     "top": "Top View",
     "front": "Front View",
     "left": "Left View",

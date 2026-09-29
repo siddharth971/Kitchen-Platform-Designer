@@ -11,6 +11,8 @@ export type ActiveTool =
   | "appliance"
   | "measure";
 
+export type TransformGizmoMode = "translate" | "rotate" | "scale";
+
 export interface UiSlice {
   displayUnit: DisplayUnit;
   activeTool: ActiveTool;
@@ -18,6 +20,10 @@ export interface UiSlice {
   gridVisible: boolean;
   snapEnabled: boolean;
   snapStep: number; // in mm (e.g. 10)
+  transformGizmoMode: TransformGizmoMode;
+  snapToWalls: boolean;
+  snapToObjects: boolean;
+  snapToCorners: boolean;
   sampleBannerDismissed: boolean;
   showDimensions: boolean;
   showWallLabels: boolean;
@@ -36,6 +42,10 @@ export interface UiSlice {
   setGridVisible: (visible: boolean) => void;
   setSnapEnabled: (enabled: boolean) => void;
   setSnapStep: (step: number) => void;
+  setTransformGizmoMode: (mode: TransformGizmoMode) => void;
+  setSnapToWalls: (enabled: boolean) => void;
+  setSnapToObjects: (enabled: boolean) => void;
+  setSnapToCorners: (enabled: boolean) => void;
   dismissSampleBanner: () => void;
   setShowDimensions: (show: boolean) => void;
   setShowWallLabels: (show: boolean) => void;
@@ -55,7 +65,11 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   viewMode: "3d",
   gridVisible: true,
   snapEnabled: true,
-  snapStep: 10,
+  snapStep: 5,
+  transformGizmoMode: "translate",
+  snapToWalls: false,
+  snapToObjects: false,
+  snapToCorners: false,
   sampleBannerDismissed: false,
   showDimensions: true,
   showWallLabels: true,
@@ -74,6 +88,10 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   setGridVisible: (gridVisible) => set({ gridVisible }),
   setSnapEnabled: (snapEnabled) => set({ snapEnabled }),
   setSnapStep: (snapStep) => set({ snapStep }),
+  setTransformGizmoMode: (transformGizmoMode) => set({ transformGizmoMode }),
+  setSnapToWalls: (snapToWalls) => set({ snapToWalls }),
+  setSnapToObjects: (snapToObjects) => set({ snapToObjects }),
+  setSnapToCorners: (snapToCorners) => set({ snapToCorners }),
   dismissSampleBanner: () => set({ sampleBannerDismissed: true }),
   setShowDimensions: (showDimensions) => set({ showDimensions }),
   setShowWallLabels: (showWallLabels) => set({ showWallLabels }),

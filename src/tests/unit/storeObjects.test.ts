@@ -162,6 +162,20 @@ describe("Store Project Slice: Phase 3 Objects and Cutouts", () => {
     expect(updated.drawers).toBe(3);
     expect(updated.doors).toBe(1);
 
+    updateCabinet("cab-1", {
+      rotation: { x: 0, y: 90, z: 0 },
+      color: "#4a5b66",
+      opacity: 0.65,
+      visible: false,
+      locked: true,
+    });
+    const styled = useAppStore.getState().project.cabinets[0];
+    expect(styled.rotation).toEqual({ x: 0, y: 90, z: 0 });
+    expect(styled.color).toBe("#4a5b66");
+    expect(styled.opacity).toBe(0.65);
+    expect(styled.visible).toBe(false);
+    expect(styled.locked).toBe(true);
+
     removeCabinet("cab-1");
     expect(useAppStore.getState().project.cabinets.length).toBe(0);
   });

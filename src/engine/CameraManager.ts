@@ -5,9 +5,63 @@ import type { CameraPresetMode } from "@/store/cameraSlice";
 import type { Room } from "@/types/project";
 import { toSceneLength } from "./coordinates";
 
+export function clampCameraBeta(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+export function clampCameraRadius(value: number, min = 0.5, max = 25): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+export function computeOrbitDelta(
+  alpha: number,
+  beta: number,
+  dx: number,
+  dy: number,
+  alphaScale = 0.005,
+  betaScale = 0.003
+): { alpha: number; beta: number } {
+  return {
+    alpha: alpha + dx * alphaScale,
+    beta: clampCameraBeta(beta - dy * betaScale, 0.1, Math.PI - 0.1),
+  };
+}
+
+export function getCameraPreset(mode: CameraPresetMode): {
+  alpha: number;
+  beta: number;
+  radius: number;
+} {
+  switch (mode) {
+    case "perspective":
+      return { alpha: -Math.PI / 3, beta: Math.PI / 2.8, radius: 7.2 };
+    case "inside":
+      return { alpha: 0, beta: Math.PI / 2.5, radius: 5.4 };
+    case "top":
+      return { alpha: -Math.PI / 2, beta: 0.02, radius: 8.5 };
+    case "front":
+      return { alpha: -Math.PI / 2, beta: Math.PI / 2, radius: 7.2 };
+    case "left":
+      return { alpha: 0, beta: Math.PI / 2, radius: 7.2 };
+    case "right":
+      return { alpha: Math.PI, beta: Math.PI / 2, radius: 7.2 };
+    case "isometric":
+      return { alpha: -Math.PI / 4, beta: Math.atan(Math.SQRT2), radius: 7.5 };
+    default:
+      return { alpha: -Math.PI / 3, beta: Math.PI / 2.8, radius: 7.2 };
+  }
+}
+
 export class CameraManager {
   public camera: ArcRotateCamera;
   private scene: Scene;
+  private pointerState: { active: boolean; x: number; y: number; button: number } = {
+    active: false,
+    x: 0,
+    y: 0,
+    button: -1,
+  };
+  private pointerControlsEnabled = true;
 
   constructor(scene: Scene, canvas: HTMLCanvasElement) {
     this.scene = scene;
@@ -18,74 +72,95 @@ export class CameraManager {
     // Radius: distance from target
     this.camera = new ArcRotateCamera(
       "MainCamera",
-      -Math.PI / 4, // 45 degrees
-      Math.PI / 3,  // 60 degrees from top
-      5.5,          // 5.5 scene units (~5.5 meters)
-      new Vector3(1.8, 1.0, 1.5), // center of 3.6m x 3.0m x 3.0m room
+      -Math.PI / 2, // look inward from the room side by default
+      Math.PI / 2.8,
+      5.5,
+      new Vector3(1.8, 1.0, 1.5),
       this.scene
     );
 
     this.camera.minZ = 0.05; // 50 mm near clip
     this.camera.maxZ = 100;  // 100 meters far clip
-    this.camera.wheelPrecision = 20; // Smooth zooming
-    this.camera.pinchPrecision = 20;
+    this.camera.wheelPrecision = 25; // Smooth zooming
+    this.camera.pinchPrecision = 25;
     this.camera.lowerRadiusLimit = 0.5; // 500 mm
     this.camera.upperRadiusLimit = 25;  // 25 meters
-    this.camera.angularSensibilityX = 1000;
-    this.camera.angularSensibilityY = 1000;
+    this.camera.angularSensibilityX = 250;
+    this.camera.angularSensibilityY = 250;
+    this.camera.inertia = 0.85;
+    this.camera.panningSensibility = 900;
 
-    // Attach control with CAD/standard controls:
-    // Right click = orbit, Middle click = pan, Wheel = zoom
-    this.camera.attachControl(canvas, true);
-    // Customise button mappings:
-    // Babylon default: 0=rotate, 1=pan, 2=zoom.
-    // Configure button 0 (left) for selection in InputManager, button 2 (right) for orbit, button 1 (middle) for pan.
-    const pointers = this.camera.inputs.attached.pointers;
-    if (pointers && "buttons" in pointers) {
-      (pointers as unknown as { buttons: number[] }).buttons = [2, 1];
+    this.camera.detachControl();
+    this.bindPointerControls(canvas);
+  }
+
+  private bindPointerControls(canvas: HTMLCanvasElement): void {
+    canvas.addEventListener("pointerdown", (event) => {
+      if (!this.pointerControlsEnabled) return;
+      if (event.button !== 0 && event.button !== 1 && event.button !== 2) return;
+
+      this.pointerState.active = true;
+      this.pointerState.x = event.clientX;
+      this.pointerState.y = event.clientY;
+      this.pointerState.button = event.button;
+      canvas.setPointerCapture(event.pointerId);
+    });
+
+    canvas.addEventListener("pointermove", (event) => {
+      if (!this.pointerControlsEnabled || !this.pointerState.active) return;
+
+      const dx = event.clientX - this.pointerState.x;
+      const dy = event.clientY - this.pointerState.y;
+      this.pointerState.x = event.clientX;
+      this.pointerState.y = event.clientY;
+
+      if (this.pointerState.button === 0) {
+        const next = computeOrbitDelta(this.camera.alpha, this.camera.beta, dx, dy);
+        this.camera.alpha = next.alpha;
+        this.camera.beta = next.beta;
+      }
+    });
+
+    canvas.addEventListener("pointerup", (event) => {
+      if (this.pointerState.active && event.pointerId !== undefined) {
+        canvas.releasePointerCapture(event.pointerId);
+      }
+      this.pointerState.active = false;
+      this.pointerState.button = -1;
+    });
+
+    canvas.addEventListener("pointerleave", () => {
+      this.pointerState.active = false;
+      this.pointerState.button = -1;
+    });
+
+    canvas.addEventListener(
+      "wheel",
+      (event) => {
+        event.preventDefault();
+        const delta = event.deltaY * 0.0025;
+        this.camera.radius = clampCameraRadius(this.camera.radius + delta);
+      },
+      { passive: false }
+    );
+  }
+
+  public setPointerControlsEnabled(enabled: boolean): void {
+    this.pointerControlsEnabled = enabled;
+    if (!enabled) {
+      this.pointerState.active = false;
+      this.pointerState.button = -1;
     }
   }
 
   public setMode(mode: CameraPresetMode): void {
-    const target = this.camera.target.clone();
+    const target = new Vector3(1.8, 0.9, 1.5);
+    const preset = getCameraPreset(mode);
 
-    switch (mode) {
-      case "perspective":
-        this.camera.mode = ArcRotateCamera.PERSPECTIVE_CAMERA;
-        this.camera.alpha = -Math.PI / 4;
-        this.camera.beta = Math.PI / 3;
-        break;
-
-      case "top":
-        this.camera.mode = ArcRotateCamera.PERSPECTIVE_CAMERA;
-        this.camera.alpha = -Math.PI / 2; // Looking along +Z
-        this.camera.beta = 0.001;          // Directly from above
-        break;
-
-      case "front":
-        this.camera.mode = ArcRotateCamera.PERSPECTIVE_CAMERA;
-        this.camera.alpha = -Math.PI / 2; // Facing north (looking towards positive Z)
-        this.camera.beta = Math.PI / 2;  // Level with horizon
-        break;
-
-      case "left":
-        this.camera.mode = ArcRotateCamera.PERSPECTIVE_CAMERA;
-        this.camera.alpha = 0;           // Facing east (looking towards positive X)
-        this.camera.beta = Math.PI / 2;
-        break;
-
-      case "right":
-        this.camera.mode = ArcRotateCamera.PERSPECTIVE_CAMERA;
-        this.camera.alpha = Math.PI;     // Facing west (looking towards negative X)
-        this.camera.beta = Math.PI / 2;
-        break;
-
-      case "isometric":
-        this.camera.mode = ArcRotateCamera.PERSPECTIVE_CAMERA;
-        this.camera.alpha = -Math.PI / 4;
-        this.camera.beta = Math.atan(Math.SQRT2); // 54.74 degrees isometric angle
-        break;
-    }
+    this.camera.mode = ArcRotateCamera.PERSPECTIVE_CAMERA;
+    this.camera.alpha = preset.alpha;
+    this.camera.beta = preset.beta;
+    this.camera.radius = preset.radius;
 
     this.camera.setTarget(target);
   }
@@ -102,9 +177,11 @@ export class CameraManager {
       toSceneLength(room.height)
     );
 
-    // Set target and radius so the entire room is well within FOV
+    // Keep the view focused on the interior working area instead of framing the entire shell.
     this.camera.setTarget(target);
-    this.camera.radius = Math.max(3.5, maxDimScene * 1.6);
+    this.camera.alpha = -Math.PI / 2;
+    this.camera.beta = Math.PI / 2.8;
+    this.camera.radius = Math.max(3.2, Math.min(6.5, maxDimScene * 0.9));
   }
 
   public dispose(): void {

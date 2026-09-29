@@ -8,11 +8,15 @@ import { fromScene } from "./coordinates";
 import type { SelectableObjectType } from "@/store/selectionSlice";
 
 export interface SelectionCallback {
-  (id: string | null, type: SelectableObjectType | null, subId?: string | null): void;
+  (id: string | null, type: SelectableObjectType | null, subId?: string | null, additive?: boolean): void;
 }
 
 export interface CursorPositionCallback {
   (posMm: { x: number; y: number; z: number }): void;
+}
+
+export function getWallContextActions(): string[] {
+  return ["Inspect wall", "Add opening", "Deselect"];
 }
 
 export class SelectionManager {
@@ -44,6 +48,11 @@ export class SelectionManager {
             // Left click down
             this.pointerDownPos = { x: evt.clientX, y: evt.clientY };
           }
+
+          if (evt.button === 2) {
+            evt.preventDefault();
+            this.performPick();
+          }
           break;
         }
 
@@ -55,7 +64,7 @@ export class SelectionManager {
 
             // If pointer didn't move significantly (< 5px), treat as a click selection
             if (dx < 5 && dy < 5) {
-              this.performPick();
+              this.performPick(evt.ctrlKey || evt.metaKey);
             }
             this.pointerDownPos = null;
           }
@@ -84,7 +93,7 @@ export class SelectionManager {
     });
   }
 
-  private performPick(): void {
+  private performPick(additive = false): void {
     const pickResult = this.scene.pick(
       this.scene.pointerX,
       this.scene.pointerY,
@@ -93,7 +102,7 @@ export class SelectionManager {
 
     if (pickResult && pickResult.hit && pickResult.pickedMesh && pickResult.pickedMesh.metadata) {
       const meta = pickResult.pickedMesh.metadata;
-      this.onSelect(meta.objectId, meta.type, meta.subId);
+      this.onSelect(meta.objectId, meta.type, meta.subId, additive);
     } else {
       // Picked empty ground or sky -> deselect
       this.onSelect(null, null);
