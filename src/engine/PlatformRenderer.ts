@@ -2,6 +2,7 @@ import { PolygonMeshBuilder } from "@babylonjs/core/Meshes/polygonMesh";
 import { MeshBuilder } from "@babylonjs/core/Meshes/meshBuilder";
 import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
+import { Texture } from "@babylonjs/core/Materials/Textures/texture";
 import { Color3 } from "@babylonjs/core/Maths/math.color";
 import { Vector2, Vector3 } from "@babylonjs/core/Maths/math.vector";
 import type { Mesh } from "@babylonjs/core/Meshes/mesh";
@@ -33,6 +34,7 @@ export class PlatformRenderer {
   private slabSelectedDefaultColor: Color3;
   private platformRoots = new Map<string, TransformNode>();
   private customMaterials: StandardMaterial[] = [];
+  private textures = new Map<string, Texture>();
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -269,7 +271,13 @@ export class PlatformRenderer {
             workingHeightScene + bsHeightScene / 2,
             toSceneLength(platform.position.z + bsThickScene / 2)
           );
-          bsMesh.material = this.backsplashMaterial;
+          bsMesh.material = this.getSurfaceMaterial(
+            platform.backsplash.materialId,
+            this.backsplashMaterial,
+            `backsplash-${platform.id}`,
+            platform.length,
+            platform.backsplash.height
+          );
           bsMesh.isPickable = false;
           this.backsplashMeshes.push(bsMesh);
         } else if (platform.shape === "l-shaped") {
@@ -287,7 +295,13 @@ export class PlatformRenderer {
             workingHeightScene + bsHeightScene / 2,
             toSceneLength(platform.position.z + bsThickScene / 2)
           );
-          bsMeshA.material = this.backsplashMaterial;
+          bsMeshA.material = this.getSurfaceMaterial(
+            platform.backsplash.materialId,
+            this.backsplashMaterial,
+            `backsplash-a-${platform.id}`,
+            platform.lengthA,
+            platform.backsplash.height
+          );
           bsMeshA.isPickable = false;
           this.backsplashMeshes.push(bsMeshA);
 
@@ -305,7 +319,13 @@ export class PlatformRenderer {
             workingHeightScene + bsHeightScene / 2,
             toSceneLength(platform.position.z + platform.lengthB / 2)
           );
-          bsMeshB.material = this.backsplashMaterial;
+          bsMeshB.material = this.getSurfaceMaterial(
+            platform.backsplash.materialId,
+            this.backsplashMaterial,
+            `backsplash-b-${platform.id}`,
+            platform.lengthB,
+            platform.backsplash.height
+          );
           bsMeshB.isPickable = false;
           this.backsplashMeshes.push(bsMeshB);
         } else if (platform.shape === "u-shaped") {
@@ -323,7 +343,13 @@ export class PlatformRenderer {
             workingHeightScene + bsHeightScene / 2,
             toSceneLength(platform.position.z + bsThickScene / 2)
           );
-          bsBase.material = this.backsplashMaterial;
+          bsBase.material = this.getSurfaceMaterial(
+            platform.backsplash.materialId,
+            this.backsplashMaterial,
+            `backsplash-base-${platform.id}`,
+            platform.lengthA,
+            platform.backsplash.height
+          );
           bsBase.isPickable = false;
           this.backsplashMeshes.push(bsBase);
 
@@ -337,7 +363,13 @@ export class PlatformRenderer {
             workingHeightScene + bsHeightScene / 2,
             toSceneLength(platform.position.z + platform.lengthB / 2)
           );
-          leftB.material = this.backsplashMaterial;
+          leftB.material = this.getSurfaceMaterial(
+            platform.backsplash.materialId,
+            this.backsplashMaterial,
+            `backsplash-left-${platform.id}`,
+            platform.lengthB,
+            platform.backsplash.height
+          );
           leftB.isPickable = false;
           this.backsplashMeshes.push(leftB);
 
@@ -351,7 +383,13 @@ export class PlatformRenderer {
             workingHeightScene + bsHeightScene / 2,
             toSceneLength(platform.position.z + platform.lengthB / 2)
           );
-          rightB.material = this.backsplashMaterial;
+          rightB.material = this.getSurfaceMaterial(
+            platform.backsplash.materialId,
+            this.backsplashMaterial,
+            `backsplash-right-${platform.id}`,
+            platform.lengthB,
+            platform.backsplash.height
+          );
           rightB.isPickable = false;
           this.backsplashMeshes.push(rightB);
         }
@@ -474,15 +512,52 @@ export class PlatformRenderer {
     platform: CountertopPlatform,
     baseMaterial: StandardMaterial
   ): StandardMaterial {
-    const catalogMaterial = SAMPLE_MATERIALS.find((material) => material.id === platform.materialId);
-    if (!platform.color && !catalogMaterial?.baseColor) return baseMaterial;
+    const materialId = platform.textureId ?? platform.materialId;
+    return this.getSurfaceMaterial(
+      materialId,
+      baseMaterial,
+      `slab-${platform.id}-material`,
+      platform.shape === "straight" ? platform.length : platform.lengthA,
+      platform.shape === "straight" ? platform.depth : platform.lengthB,
+      platform.color
+    );
+  }
 
-    const material = baseMaterial.clone(`slab-${platform.id}-material`);
+  private getSurfaceMaterial(
+    materialId: string | undefined,
+    baseMaterial: StandardMaterial,
+    name: string,
+    widthMm: number,
+    depthMm: number,
+    colorOverride?: string
+  ): StandardMaterial {
+    const catalogMaterial = SAMPLE_MATERIALS.find((material) => material.id === materialId);
+    if (!colorOverride && !catalogMaterial?.baseColor && !catalogMaterial?.textureUrl) return baseMaterial;
+
+    const material = baseMaterial.clone(name);
     if (!material) return baseMaterial;
-    if (catalogMaterial?.baseColor) {
+    if (catalogMaterial?.textureUrl) {
+      material.diffuseColor = Color3.White();
+    } else if (catalogMaterial?.baseColor) {
       material.diffuseColor = Color3.FromHexString(catalogMaterial.baseColor);
     }
-    if (platform.color) material.diffuseColor = Color3.FromHexString(platform.color);
+    if (colorOverride) material.diffuseColor = Color3.FromHexString(colorOverride);
+    if (catalogMaterial?.textureUrl) {
+      const textureScale = catalogMaterial.textureScaleMm ?? 2400;
+      const uScale = Math.max(1, widthMm / textureScale);
+      const vScale = Math.max(1, depthMm / textureScale);
+      const textureKey = `${catalogMaterial.textureUrl}:${uScale}:${vScale}`;
+      let texture = this.textures.get(textureKey);
+      if (!texture) {
+        texture = new Texture(catalogMaterial.textureUrl, this.scene, true, false);
+        texture.wrapU = Texture.WRAP_ADDRESSMODE;
+        texture.wrapV = Texture.WRAP_ADDRESSMODE;
+        texture.uScale = uScale;
+        texture.vScale = vScale;
+        this.textures.set(textureKey, texture);
+      }
+      material.diffuseTexture = texture;
+    }
     this.customMaterials.push(material);
     return material;
   }
@@ -572,6 +647,8 @@ export class PlatformRenderer {
     this.carcassMaterial.dispose();
     this.backsplashMaterial.dispose();
     this.handleMaterial.dispose();
+    for (const texture of this.textures.values()) texture.dispose();
+    this.textures.clear();
   }
 
   public getTransformNode(platformId: string): TransformNode | null {

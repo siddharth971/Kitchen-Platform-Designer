@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Eye, LockKeyhole, Palette } from "lucide-react";
+import { Eye, LockKeyhole } from "lucide-react";
 import { parseLength } from "@/core/units";
 import { SAMPLE_MATERIALS } from "@/data/presets";
 import { useAppStore } from "@/store";
@@ -115,13 +115,11 @@ export function UniversalObjectControls() {
           height: selection.object.height,
         };
   const currentMaterialId = object.materialId;
-  const selectedMaterial = SAMPLE_MATERIALS.find((material) => material.id === currentMaterialId);
   const objectName = selection.kind === "cabinet"
     ? selection.object.name || `${selection.object.type} cabinet`
     : selection.object.name;
   const rotation = object.rotation ?? { x: 0, y: 0, z: 0 };
   const locked = object.locked === true;
-  const texturedMaterials = SAMPLE_MATERIALS.filter((material) => material.textureUrl);
 
   const updateAxis = (axis: "x" | "y" | "z", value: number) => {
     if (selection.kind === "platform") {
@@ -267,43 +265,15 @@ export function UniversalObjectControls() {
       <div className="space-y-2">
         {sectionTitle("Appearance")}
         <div className="grid grid-cols-[52px_1fr] items-center gap-2">
-          <Label className="text-[10px] text-muted-foreground">Color</Label>
-          <div className="flex items-center gap-2">
-            <Palette className="size-3.5 text-muted-foreground" />
-            <input
-              aria-label="Object color"
-              type="color"
-              value={object.color ?? selectedMaterial?.baseColor ?? "#c6c3bc"}
-              disabled={locked}
-              className="h-7 w-10 cursor-pointer rounded border border-border bg-background p-0.5 disabled:cursor-not-allowed"
-              onChange={(event) => recordChange({ color: event.currentTarget.value })}
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-[52px_1fr] items-center gap-2">
           <Label className="text-[10px] text-muted-foreground">Material</Label>
           <select
             value={currentMaterialId ?? ""}
             disabled={locked}
-            onChange={(event) => recordChange({ materialId: event.currentTarget.value } as TransformPatch)}
+            onChange={(event) => recordChange({ materialId: event.currentTarget.value, textureId: undefined } as TransformPatch)}
             className="h-7 min-w-0 rounded-md border border-border bg-background px-2 text-[11px] disabled:opacity-50"
           >
             {selection.kind !== "platform" && <option value="">Default finish</option>}
             {SAMPLE_MATERIALS.map((material) => (
-              <option key={material.id} value={material.id}>{material.name}</option>
-            ))}
-          </select>
-        </div>
-        <div className="grid grid-cols-[52px_1fr] items-center gap-2">
-          <Label className="text-[10px] text-muted-foreground">Texture</Label>
-          <select
-            value={object.textureId ?? ""}
-            disabled={locked || texturedMaterials.length === 0}
-            onChange={(event) => recordChange({ textureId: event.currentTarget.value || undefined })}
-            className="h-7 min-w-0 rounded-md border border-border bg-background px-2 text-[11px] disabled:opacity-50"
-          >
-            <option value="">{texturedMaterials.length ? "No texture" : "No textures available"}</option>
-            {texturedMaterials.map((material) => (
               <option key={material.id} value={material.id}>{material.name}</option>
             ))}
           </select>

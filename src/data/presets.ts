@@ -115,6 +115,96 @@ export const SAMPLE_MATERIALS: Material[] = [
       costPerSlab: 5000, // PLACEHOLDER
     },
   },
+  {
+    id: "marble-ivory-gold",
+    name: "Ivory Gold Veined Marble (Sample)",
+    category: "marble",
+    textureUrl: "/textures/marble-ivory-gold.jpg",
+    textureScaleMm: 2400,
+    baseColor: "#e8e3d8",
+    roughness: 0.28,
+    metalness: 0,
+    pricePerSqFt: 280, // PLACEHOLDER
+    pricePerSqM: 3014, // PLACEHOLDER
+    pricePerRunningFt: 560, // PLACEHOLDER
+    maxPieceLengthMm: 3000,
+    veined: true,
+    slab: {
+      widthMm: 1800,
+      lengthMm: 3000,
+      costPerSlab: 16000, // PLACEHOLDER
+    },
+  },
+  {
+    id: "marble-black-gold",
+    name: "Black Marble with Gold Veins (Sample)",
+    category: "marble",
+    textureUrl: "/textures/marble-black-gold.jpg",
+    textureScaleMm: 2400,
+    baseColor: "#ffffff",
+    roughness: 0.26,
+    metalness: 0,
+    pricePerSqFt: 300, // PLACEHOLDER
+    pricePerSqM: 3229, // PLACEHOLDER
+    maxPieceLengthMm: 3000,
+    veined: true,
+  },
+  {
+    id: "marble-carrara-white",
+    name: "Carrara White Marble (Sample)",
+    category: "marble",
+    textureUrl: "/textures/marble-carrara-white.jpg",
+    textureScaleMm: 2400,
+    baseColor: "#ffffff",
+    roughness: 0.28,
+    metalness: 0,
+    pricePerSqFt: 260, // PLACEHOLDER
+    pricePerSqM: 2799, // PLACEHOLDER
+    maxPieceLengthMm: 3000,
+    veined: true,
+  },
+  {
+    id: "marble-calacatta-beige",
+    name: "Calacatta Beige Marble (Sample)",
+    category: "marble",
+    textureUrl: "/textures/marble-calacatta-beige.jpg",
+    textureScaleMm: 2400,
+    baseColor: "#ffffff",
+    roughness: 0.28,
+    metalness: 0,
+    pricePerSqFt: 290, // PLACEHOLDER
+    pricePerSqM: 3122, // PLACEHOLDER
+    maxPieceLengthMm: 3000,
+    veined: true,
+  },
+  {
+    id: "marble-dark-stone",
+    name: "Dark Stone Marble (Sample)",
+    category: "marble",
+    textureUrl: "/textures/marble-dark-stone.jpg",
+    textureScaleMm: 2400,
+    baseColor: "#ffffff",
+    roughness: 0.3,
+    metalness: 0,
+    pricePerSqFt: 275, // PLACEHOLDER
+    pricePerSqM: 2960, // PLACEHOLDER
+    maxPieceLengthMm: 3000,
+    veined: true,
+  },
+  {
+    id: "marble-storm-gray",
+    name: "Storm Gray Marble (Sample)",
+    category: "marble",
+    textureUrl: "/textures/marble-storm-gray.jpg",
+    textureScaleMm: 2400,
+    baseColor: "#ffffff",
+    roughness: 0.3,
+    metalness: 0,
+    pricePerSqFt: 255, // PLACEHOLDER
+    pricePerSqM: 2745, // PLACEHOLDER
+    maxPieceLengthMm: 3000,
+    veined: true,
+  },
 ];
 
 export const SAMPLE_EDGE_PROFILES: EdgeProfile[] = [

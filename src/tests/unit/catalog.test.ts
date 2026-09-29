@@ -1,4 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { SAMPLE_MATERIALS } from "@/data/presets";
 import {
   SINK_CATALOG,
   HOB_CATALOG,
@@ -15,6 +18,24 @@ import {
 } from "@/data/catalogLoader";
 
 describe("Catalog Loader & Validation", () => {
+  it("offers the textured ivory-and-gold marble for countertops", () => {
+    const marble = SAMPLE_MATERIALS.find((material) => material.id === "marble-ivory-gold");
+
+    expect(marble?.category).toBe("marble");
+    expect(marble?.textureUrl).toBe("/textures/marble-ivory-gold.jpg");
+    expect(marble?.textureScaleMm).toBeGreaterThan(0);
+  });
+
+  it("bundles every marble texture referenced by the material list", () => {
+    const marbleTextures = SAMPLE_MATERIALS.filter((material) => material.category === "marble");
+
+    expect(marbleTextures).toHaveLength(6);
+    for (const material of marbleTextures) {
+      expect(material.textureUrl).toBeTruthy();
+      expect(existsSync(join(process.cwd(), "public", material.textureUrl!.slice(1)))).toBe(true);
+    }
+  });
+
   describe("Sink Catalog", () => {
     it("loads and validates all sink entries against Zod schema", () => {
       expect(SINK_CATALOG.length).toBeGreaterThan(0);
