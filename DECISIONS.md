@@ -148,3 +148,17 @@ Countertop fabrication pricing depends on fluctuating material costs, square-foo
   - Gross billing: applies workshop waste margin (default 8%) over raw bounding stone area.
   - Net billing: charges exact finished surface area.
 - **Export Formats**: Provides zero-dependency formatted plaintext and standard RFC 4180 CSV export for direct integration into workshop spreadsheets and client invoicing.
+
+---
+
+## 11. Fabrication Drawing, Cut List & Output Hub Architecture (Section 18 & Phase 6)
+
+### Context
+Contractors need to deliver professional customer-facing quotations, while stone fabricators require dimensioned technical cut lists and shop drawings showing cutouts, seams, edge finishing, and slab yield. Untrusted JSON project imports must also be strictly validated.
+
+### Decision
+- **Unified 2D SVG Generator (`core/fabrication/index.ts`)**: Generates vector-sharp CAD shop drawings with piece dimensions, cutout offsets, joint seams, finished edge profiles, and title block directly in SVG without external CAD libraries.
+- **2D Shelf Slab Nesting**: Employs a guillotine shelf-packing algorithm on standard stone slabs (3200 × 1600 mm) to compute slab counts, yield percentage, and scrap margin.
+- **Untrusted JSON Ingestion Gate (`core/export/index.ts`)**: All imported `.kpd.json` files pass through schema version checking, version migration (v0 -> v1), and strict Zod parsing before being loaded into state.
+- **Pre-Export Validation Check**: Prominently warns the user before exporting or printing if safety/fit validation errors (e.g. fire hazard sink-hob distance or stone edge bridge clearance) are unresolved.
+- **Mandatory Disclaimer**: Every printed quotation, drawing, and exported summary carries: *"Estimate only. Final measurement and price are confirmed on site."*

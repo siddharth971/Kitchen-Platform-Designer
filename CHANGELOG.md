@@ -2,9 +2,31 @@
 
 All notable changes to the Kitchen Platform Designer project will be documented in this file.
 
-## [Unreleased] - Phase 5
+## [Unreleased] - Phase 6
 
 ### Added
+- **Phase 6: Quotation & Output Hub**:
+  - `core/fabrication/index.ts`: Pure domain module for stone fabrication drawings, cut lists, slab nesting, and quotation export:
+    - Engineering cut list generation for Straight and L-shaped platforms, with seam splitting for slabs > 3200 mm
+    - 2D guillotine slab nesting on standard stone slabs (3200 × 1600 mm) with utilization %, waste %, and oversize piece detection
+    - Engineering SVG fabrication drawing with dimensioned slabs, cutout holes, seam joints, finished edge markers, and professional title block
+    - Formatted WhatsApp summary builder (`wa.me` text) with customer details, itemized totals, and disclaimer
+  - `core/export/index.ts`: Pure domain serialization, Zod validation, and schema migration engine (`CURRENT_SCHEMA_VERSION = 1`).
+  - `types/business.ts` & `store/businessSlice.ts`: Persistent workshop / business profile settings (Name, GST, Address, Phone, Email, Logo, Payment Terms, T&C, Validity).
+  - `components/editor/ExportModal.tsx`: Comprehensive Export & Quotation Hub with 4 dedicated tabs:
+    - 📋 **Client Quotation**: Professional invoice sheet with business header, customer details, itemized table, GST, payment terms, and `@media print` layout
+    - 📐 **Fabrication Drawing & Cut List**: Dimensioned technical SVG drawing preview, SVG download, cut list table, and slab yield metrics
+    - 💾 **Save & Export**: Download/import project JSON with migration, 3D viewport canvas PNG snapshot, and WhatsApp direct share
+    - ⚙️ **Workshop Settings**: Configurable workshop identity, tax ID, and legal disclaimers
+  - Pre-export validation gate: Alerts fabricator if design validation errors exist before cutting stone.
+  - Mandatory disclaimer across all quotes and drawings: "Estimate only. Final measurement and price are confirmed on site."
+  - `TopBar.tsx`: Added "Export" button (opens hub with `Q` shortcut), connected Save button.
+  - `EditorLayout.tsx`: Mounted ExportModal, added `Q` keyboard shortcut.
+  - Complete test suite: **107 unit tests** across **12 test suites** — all passing.
+  - ESLint: 0 errors, 0 warnings.
+  - TypeScript strict: 0 errors.
+
+## Phase 5: Estimation Engine & Quotation Panel
 - **Phase 5: Estimation Engine & Quotation Panel**:
   - `core/estimation/index.ts`: Pure domain estimation engine (zero React/Babylon deps) providing itemized cost breakdowns:
     - Material slab billing: Gross area (with configurable waste margin %) vs. Net area (exact finished stone)

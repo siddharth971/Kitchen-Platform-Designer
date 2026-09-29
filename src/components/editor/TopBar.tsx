@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   Calculator,
+  FileDown,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -45,6 +46,7 @@ export function TopBar() {
   const report = useMemo(() => runProjectValidation(project), [project]);
   const estimationOpen = useAppStore((state) => state.estimationOpen);
   const setEstimationOpen = useAppStore((state) => state.setEstimationOpen);
+  const openExportModal = useAppStore((state) => state.openExportModal);
 
   const handleUndo = () => {
     const prev = undo();
@@ -255,12 +257,24 @@ export function TopBar() {
         </Button>
 
         <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 text-xs cursor-pointer hover:bg-accent"
+          onClick={() => openExportModal("quote")}
+          title="Export Quotation & Fabrication Drawing (Q)"
+        >
+          <FileDown className="w-3.5 h-3.5" />
+          <span>Export</span>
+        </Button>
+
+        <Button
           variant="default"
           size="sm"
           className="h-8 gap-1.5 text-xs cursor-pointer"
           onClick={() => {
-            alert("Project saved locally to memory state.");
+            openExportModal("export");
           }}
+          title="Save & Project Management"
         >
           <Save className="w-3.5 h-3.5" />
           <span>Save</span>

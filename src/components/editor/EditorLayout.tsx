@@ -11,6 +11,7 @@ import { StatusBar } from "./StatusBar";
 import { CatalogModal } from "./CatalogModal";
 import { ValidationDrawer } from "./ValidationDrawer";
 import { EstimationPanel } from "./EstimationPanel";
+import { ExportModal } from "./ExportModal";
 
 export function EditorLayout() {
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number; z: number } | null>(null);
@@ -31,6 +32,8 @@ export function EditorLayout() {
   const validationDrawerOpen = useAppStore((state) => state.validationDrawerOpen);
   const setEstimationOpen = useAppStore((state) => state.setEstimationOpen);
   const estimationOpen = useAppStore((state) => state.estimationOpen);
+  const setExportModalOpen = useAppStore((state) => state.setExportModalOpen);
+  const exportModalOpen = useAppStore((state) => state.exportModalOpen);
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -124,12 +127,36 @@ export function EditorLayout() {
         case "E":
           setEstimationOpen(!estimationOpen);
           break;
+        // Export & Quotation modal
+        case "q":
+        case "Q":
+          setExportModalOpen(!exportModalOpen);
+          break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo, setProject, setCameraMode, triggerFit, gridVisible, setGridVisible, snapEnabled, setSnapEnabled, selectObject, setActiveTool, setActiveMeasurementStart, setValidationDrawerOpen, validationDrawerOpen, setEstimationOpen, estimationOpen]);
+  }, [
+    undo,
+    redo,
+    setProject,
+    setCameraMode,
+    triggerFit,
+    gridVisible,
+    setGridVisible,
+    snapEnabled,
+    setSnapEnabled,
+    selectObject,
+    setActiveTool,
+    setActiveMeasurementStart,
+    setValidationDrawerOpen,
+    validationDrawerOpen,
+    setEstimationOpen,
+    estimationOpen,
+    setExportModalOpen,
+    exportModalOpen,
+  ]);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-background text-foreground">
@@ -164,6 +191,9 @@ export function EditorLayout() {
 
       {/* Cost Estimation Panel */}
       <EstimationPanel />
+
+      {/* Export & Quotation Hub */}
+      <ExportModal />
     </div>
   );
 }

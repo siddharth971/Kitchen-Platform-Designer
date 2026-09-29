@@ -27,6 +27,8 @@ export interface UiSlice {
   validationDrawerOpen: boolean;
   activeMeasurementStart: Point3D | null;
   estimationOpen: boolean;
+  exportModalOpen: boolean;
+  exportModalTab: "quote" | "fabrication" | "export" | "settings";
 
   setDisplayUnit: (unit: DisplayUnit) => void;
   setActiveTool: (tool: ActiveTool) => void;
@@ -43,6 +45,8 @@ export interface UiSlice {
   setValidationDrawerOpen: (open: boolean) => void;
   setActiveMeasurementStart: (point: Point3D | null) => void;
   setEstimationOpen: (open: boolean) => void;
+  openExportModal: (tab?: "quote" | "fabrication" | "export" | "settings") => void;
+  setExportModalOpen: (open: boolean) => void;
 }
 
 export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
@@ -61,6 +65,8 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   validationDrawerOpen: false,
   activeMeasurementStart: null,
   estimationOpen: false,
+  exportModalOpen: false,
+  exportModalTab: "quote",
 
   setDisplayUnit: (displayUnit) => set({ displayUnit }),
   setActiveTool: (activeTool) => set({ activeTool }),
@@ -77,4 +83,6 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   setValidationDrawerOpen: (validationDrawerOpen) => set({ validationDrawerOpen }),
   setActiveMeasurementStart: (activeMeasurementStart) => set({ activeMeasurementStart }),
   setEstimationOpen: (estimationOpen) => set({ estimationOpen }),
+  openExportModal: (tab = "quote") => set({ exportModalOpen: true, exportModalTab: tab }),
+  setExportModalOpen: (exportModalOpen) => set({ exportModalOpen }),
 });

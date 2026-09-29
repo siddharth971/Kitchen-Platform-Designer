@@ -1,5 +1,5 @@
 import type { StateCreator } from "zustand";
-import type { Project, Room, Wall, WallOpening } from "@/types/project";
+import type { Project, Room, Wall, WallOpening, Customer } from "@/types/project";
 import type {
   CountertopPlatform,
   Cutout,
@@ -45,6 +45,8 @@ export interface ProjectSlice {
   addMeasurement: (measurement: MeasurementItem) => void;
   removeMeasurement: (id: string) => void;
   clearMeasurements: () => void;
+  updateCustomer: (patch: Partial<Customer>) => void;
+  updateProjectName: (name: string) => void;
   resetProject: (name?: string, customerName?: string) => void;
 }
 
@@ -370,6 +372,30 @@ export const createProjectSlice: StateCreator<ProjectSlice, [], [], ProjectSlice
         measurements: [],
       },
     })),
+
+  updateCustomer: (patch) =>
+    set((state) =>
+      withTimestamp({
+        project: {
+          ...state.project,
+          customer: {
+            name: state.project.customer?.name || "Client",
+            ...state.project.customer,
+            ...patch,
+          },
+        },
+      })
+    ),
+
+  updateProjectName: (name) =>
+    set((state) =>
+      withTimestamp({
+        project: {
+          ...state.project,
+          name,
+        },
+      })
+    ),
 
   resetProject: (name, customerName) =>
     set({ project: createInitialProject(name, customerName) }),
