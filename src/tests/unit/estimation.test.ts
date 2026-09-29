@@ -97,6 +97,7 @@ function makeProject(overrides: Partial<Project> = {}): Project {
     sinks: [],
     hobs: [],
     utilityPoints: [],
+    groups: [],
     materials: [],
     measurements: [],
     settings: {

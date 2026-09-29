@@ -25,6 +25,7 @@ export interface SelectionSlice {
   selectObject: (id: string | null, type?: SelectableObjectType | null, subId?: string | null) => void;
   setSelectedObjects: (objects: SelectedObjectRef[]) => void;
   toggleSelectedObject: (object: SelectedObjectRef) => void;
+  selectGroup: (groupId: string, objects: SelectedObjectRef[]) => void;
   clearSelection: () => void;
 }
 
@@ -75,6 +76,13 @@ export const createSelectionSlice: StateCreator<SelectionSlice, [], [], Selectio
       };
     }
     return { selectedId: object.id, selectedType: "multi", selectedSubId: null, selectedObjects: objects };
+  }),
+
+  selectGroup: (groupId, objects) => set({
+    selectedId: groupId,
+    selectedType: "group",
+    selectedSubId: null,
+    selectedObjects: objects,
   }),
 
   clearSelection: () =>

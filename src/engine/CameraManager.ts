@@ -97,6 +97,7 @@ export class CameraManager {
   private bindPointerControls(canvas: HTMLCanvasElement): void {
     canvas.addEventListener("pointerdown", (event) => {
       if (!this.pointerControlsEnabled) return;
+      if (event.shiftKey && event.button === 0) return;
       if (event.button !== 0 && event.button !== 1 && event.button !== 2) return;
 
       this.pointerState.active = true;

@@ -172,7 +172,7 @@ export class WallRenderer {
       );
       const root = new TransformNode(`wall-root-${wall.id}`, this.scene);
       root.position.copyFrom(center);
-      root.metadata = { objectId: wall.id, locked: false };
+      root.metadata = { objectId: wall.id, locked: wall.locked === true };
       for (const mesh of [
         ...this.wallMeshes.slice(wallMeshStart),
         ...this.openingFrameMeshes.slice(frameMeshStart),

@@ -29,6 +29,7 @@ function makeTestProject(): Project {
     sinks: [],
     hobs: [],
     utilityPoints: [],
+    groups: [],
     materials: [],
     measurements: [],
     settings: {

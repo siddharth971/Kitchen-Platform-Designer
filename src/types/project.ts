@@ -24,9 +24,17 @@ export const WallSchema = z.object({
   thickness: z.number().positive(),  // mm
   materialId: z.string().optional(),
   color: z.string().optional(),
+  locked: z.boolean().optional(),
   openings: z.array(WallOpeningSchema).default([]),
 });
 export type Wall = z.infer<typeof WallSchema>;
+
+export const ObjectGroupSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  objectIds: z.array(z.string()).min(1),
+});
+export type ObjectGroup = z.infer<typeof ObjectGroupSchema>;
 
 export const RoomSchema = z.object({
   length: z.number().positive(),     // mm along X (width)
@@ -37,6 +45,7 @@ export const RoomSchema = z.object({
   floorColor: z.string().default("#f3f4f6"),
   wallColor: z.string().default("#ffffff"),
   ceilingVisible: z.boolean().default(false),
+  locked: z.boolean().optional(),
 });
 export type Room = z.infer<typeof RoomSchema>;
 
@@ -76,6 +85,7 @@ export const ProjectSchema = z.object({
   sinks: z.array(z.any()).default([]),      // SinkInstance[]
   hobs: z.array(z.any()).default([]),       // HobInstance[]
   utilityPoints: z.array(z.any()).default([]),
+  groups: z.array(ObjectGroupSchema).default([]),
   materials: z.array(z.any()).default([]),
   measurements: z.array(z.any()).default([]),
   pricing: z.any().optional(),

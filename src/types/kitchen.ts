@@ -154,4 +154,5 @@ export interface UtilityPoint {
   notes?: string;
   rotation?: Point3D;
   scale?: Point3D;
+  locked?: boolean;
 }

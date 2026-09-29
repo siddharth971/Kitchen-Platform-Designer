@@ -368,6 +368,7 @@ describe("Core Validation Engine (Phase 4)", () => {
         sinks: [],
         hobs: [],
         utilityPoints: [],
+        groups: [],
         materials: [],
         measurements: [],
         pricing: DEFAULT_PRICING_CONFIG,

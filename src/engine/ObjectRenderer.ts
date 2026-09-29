@@ -403,7 +403,7 @@ export class ObjectRenderer {
 
       const root = new TransformNode(`object-root-${pt.id}`, this.scene);
       root.position.copyFrom(indicator.position);
-      root.metadata = { objectId: pt.id, locked: false };
+      root.metadata = { objectId: pt.id, locked: pt.locked === true };
       const rotation = pt.rotation ?? { x: 0, y: 0, z: 0 };
       const scale = pt.scale ?? { x: 1, y: 1, z: 1 };
       root.rotation.set(rotation.x * Math.PI / 180, rotation.y * Math.PI / 180, rotation.z * Math.PI / 180);

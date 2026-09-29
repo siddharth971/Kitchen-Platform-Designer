@@ -101,6 +101,7 @@ export function createInitialProject(name: string = "Patel Residence Kitchen", c
     sinks: [],
     hobs: [],
     utilityPoints: [],
+    groups: [],
     materials: [],
     measurements: [],
     pricing: DEFAULT_PRICING_CONFIG,

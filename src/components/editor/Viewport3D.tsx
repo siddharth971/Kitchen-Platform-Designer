@@ -14,6 +14,8 @@ import type { Point3D } from "@/types/geometry";
 import { generateId } from "@/lib/id";
 import { applyTransformCommit } from "@/core/geometry/transform";
 import type { TransformGizmoCommit } from "@/engine/TransformGizmoController";
+import type { SelectionRectangle } from "@/engine/SelectionManager";
+import type { SelectedObjectRef } from "@/store/selectionSlice";
 
 interface Viewport3DProps {
   onCursorMove?: (posMm: { x: number; y: number; z: number }) => void;
@@ -23,13 +25,16 @@ export function Viewport3D({ onCursorMove }: Viewport3DProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<BabylonEngine | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [selectionRectangle, setSelectionRectangle] = useState<SelectionRectangle | null>(null);
   const [hiddenWalls, setHiddenWalls] = useState<Record<string, boolean>>({});
 
   const project = useAppStore((state) => state.project);
   const selectedId = useAppStore((state) => state.selectedId);
   const selectedType = useAppStore((state) => state.selectedType);
+  const selectedObjects = useAppStore((state) => state.selectedObjects);
   const selectObject = useAppStore((state) => state.selectObject);
   const toggleSelectedObject = useAppStore((state) => state.toggleSelectedObject);
+  const setSelectedObjects = useAppStore((state) => state.setSelectedObjects);
   const gridVisible = useAppStore((state) => state.gridVisible);
   const viewMode = useAppStore((state) => state.viewMode);
   const cameraMode = useAppStore((state) => state.cameraMode);
@@ -67,9 +72,13 @@ export function Viewport3D({ onCursorMove }: Viewport3DProps) {
     [selectObject, toggleSelectedObject]
   );
 
-  const handleTransformCommit = useCallback((change: TransformGizmoCommit) => {
+  const handleSelectMany = useCallback((objects: SelectedObjectRef[]) => {
+    setSelectedObjects(objects);
+  }, [setSelectedObjects]);
+
+  const handleTransformCommit = useCallback((changes: TransformGizmoCommit[]) => {
     const store = useAppStore.getState();
-    const nextProject = applyTransformCommit(store.project, change);
+    const nextProject = changes.reduce((current, change) => applyTransformCommit(current, change), store.project);
     if (nextProject === store.project) return;
     store.pushHistory(store.project);
     store.setProject(nextProject);
@@ -105,7 +114,14 @@ export function Viewport3D({ onCursorMove }: Viewport3DProps) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const engine = new BabylonEngine(canvas, handleSelect, handleCursorMove, handleTransformCommit);
+    const engine = new BabylonEngine(
+      canvas,
+      handleSelect,
+      handleCursorMove,
+      handleTransformCommit,
+      handleSelectMany,
+      setSelectionRectangle
+    );
     engineRef.current = engine;
     setIsReady(true);
 
@@ -122,7 +138,7 @@ export function Viewport3D({ onCursorMove }: Viewport3DProps) {
       engineRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleTransformCommit]);
+  }, [handleTransformCommit, handleSelectMany, handleSelect]);
 
   // Sync the handleCursorMove callback reference into Babylon SelectionManager dynamically
   // by recreating the engine when activeTool changes is expensive; instead we track in ref
@@ -146,15 +162,16 @@ export function Viewport3D({ onCursorMove }: Viewport3DProps) {
       selectedId,
       gridVisible
     );
-    engineRef.current.setTransformTarget(
-      selectedId,
-      selectedType === "multi" || selectedType === "group" ? null : selectedType,
-      activeTool === "select" && viewMode === "3d"
-    );
+    const targetEnabled = activeTool === "select" && viewMode === "3d";
+    if (selectedType === "multi" || selectedType === "group") {
+      engineRef.current.setTransformTargets(selectedObjects, targetEnabled);
+    } else {
+      engineRef.current.setTransformTarget(selectedId, selectedType, targetEnabled);
+    }
   }, [
     project.room, project.walls, project.platforms,
     project.sinks, project.hobs, project.cabinets, project.appliances, project.utilityPoints,
-    project.measurements, selectedId, selectedType, gridVisible, activeTool, viewMode, isReady,
+    project.measurements, selectedId, selectedType, selectedObjects, gridVisible, activeTool, viewMode, isReady,
   ]);
 
   useEffect(() => {
@@ -235,6 +252,20 @@ export function Viewport3D({ onCursorMove }: Viewport3DProps) {
 
   const hasHiddenWalls = Object.values(hiddenWalls).some(Boolean);
   const selectedObjectLocked =
+    selectedType === "multi" || selectedType === "group"
+      ? selectedObjects.length > 0 && selectedObjects.every((reference) => {
+          if (reference.type === "wall") return project.walls.find((item) => item.id === reference.id)?.locked === true;
+          if (reference.type === "platform") return project.platforms.find((item) => item.id === reference.id)?.locked === true;
+          if (reference.type === "cabinet") return project.cabinets.find((item) => item.id === reference.id)?.locked === true;
+          if (reference.type === "appliance") return project.appliances.find((item) => item.id === reference.id)?.locked === true;
+          if (reference.type === "sink") return project.sinks.find((item) => item.id === reference.id)?.locked === true;
+          if (reference.type === "hob") return project.hobs.find((item) => item.id === reference.id)?.locked === true;
+          if (reference.type === "utility") return project.utilityPoints.find((item) => item.id === reference.id)?.locked === true;
+          return false;
+        }) :
+    selectedType === "room" ? project.room.locked === true :
+    selectedType === "wall" ? project.walls.find((item) => item.id === selectedId)?.locked === true :
+    selectedType === "utility" ? project.utilityPoints.find((item) => item.id === selectedId)?.locked === true :
     selectedType === "platform" ? project.platforms.find((item) => item.id === selectedId)?.locked === true :
     selectedType === "cabinet" ? project.cabinets.find((item) => item.id === selectedId)?.locked === true :
     selectedType === "appliance" ? project.appliances.find((item) => item.id === selectedId)?.locked === true :
@@ -274,6 +305,19 @@ export function Viewport3D({ onCursorMove }: Viewport3DProps) {
         onClick={handleCanvasClick}
         onContextMenu={handleContextMenu}
       />
+
+      {selectionRectangle && (
+        <div
+          aria-hidden="true"
+          className="absolute z-10 border border-primary bg-primary/10 pointer-events-none"
+          style={{
+            left: selectionRectangle.left,
+            top: selectionRectangle.top,
+            width: selectionRectangle.width,
+            height: selectionRectangle.height,
+          }}
+        />
+      )}
 
       {contextMenu && selectedType === "wall" && selectedId && (
         <div

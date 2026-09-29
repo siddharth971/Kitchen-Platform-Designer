@@ -15,8 +15,8 @@ import { WallRenderer } from "./WallRenderer";
 import { PlatformRenderer } from "./PlatformRenderer";
 import { ObjectRenderer } from "./ObjectRenderer";
 import { MeasurementRenderer } from "./MeasurementRenderer";
-import { TransformGizmoController, type TransformGizmoCommit, type TransformGizmoMode, type TransformSnapOptions } from "./TransformGizmoController";
-import { SelectionManager, type SelectionCallback, type CursorPositionCallback } from "./SelectionManager";
+import { TransformGizmoController, type TransformGizmoCommit, type TransformGizmoMode, type TransformGizmoTarget, type TransformSnapOptions } from "./TransformGizmoController";
+import { SelectionManager, type SelectionCallback, type CursorPositionCallback, type MultiSelectionCallback, type SelectionRectangleCallback } from "./SelectionManager";
 import type { Room, Wall } from "@/types/project";
 import type { CountertopPlatform, SinkInstance, HobInstance, Cabinet, ApplianceInstance, UtilityPoint } from "@/types/kitchen";
 import type { MeasurementItem } from "@/core/geometry/measurement";
@@ -67,7 +67,9 @@ export class BabylonEngine {
     canvas: HTMLCanvasElement,
     onSelect: SelectionCallback,
     onCursorMove?: CursorPositionCallback,
-    onTransformCommit?: (commit: TransformGizmoCommit) => void
+    onTransformCommit?: (commits: TransformGizmoCommit[]) => void,
+    onSelectMany?: MultiSelectionCallback,
+    onSelectionRectangle?: SelectionRectangleCallback
   ) {
     this.canvas = canvas;
 
@@ -94,7 +96,14 @@ export class BabylonEngine {
     this.platformRenderer = new PlatformRenderer(this.scene);
     this.objectRenderer = new ObjectRenderer(this.scene);
     this.measurementRenderer = new MeasurementRenderer(this.scene);
-    this.selectionManager = new SelectionManager(this.scene, canvas, onSelect, onCursorMove);
+    this.selectionManager = new SelectionManager(
+      this.scene,
+      canvas,
+      onSelect,
+      onCursorMove,
+      onSelectMany,
+      onSelectionRectangle
+    );
     this.transformGizmoController = new TransformGizmoController(
       this.scene,
       () => this.markDirty(2)
@@ -267,6 +276,25 @@ export class BabylonEngine {
     }
 
     this.transformGizmoController.setTarget(root, id, type, root?.metadata?.locked === true);
+    this.markDirty(3);
+  }
+
+  public setTransformTargets(targets: Array<{ id: string; type: SelectableObjectType }>, enabled = true): void {
+    const resolved: TransformGizmoTarget[] = [];
+    if (enabled) {
+      for (const target of targets) {
+        let node: TransformNode | null = null;
+        if (target.type === "wall" || target.type === "opening") node = this.wallRenderer.getTransformNode(target.id);
+        else if (target.type === "platform") node = this.platformRenderer.getTransformNode(target.id);
+        else if (["cabinet", "appliance", "sink", "hob", "utility"].includes(target.type)) {
+          node = this.objectRenderer.getTransformNode(target.id);
+        }
+        if (node && node.metadata?.locked !== true) {
+          resolved.push({ node, objectId: target.id, objectType: target.type });
+        }
+      }
+    }
+    this.transformGizmoController.setTargets(resolved);
     this.markDirty(3);
   }
 

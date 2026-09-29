@@ -36,6 +36,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { UniversalObjectControls } from "./UniversalObjectControls";
+import { SceneSelectionActions } from "./SceneSelectionActions";
 
 export function PropertiesPanel() {
   const project = useAppStore((state) => state.project);
@@ -160,6 +161,7 @@ export function PropertiesPanel() {
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6 text-xs">
+        <SceneSelectionActions />
         <UniversalObjectControls />
 
         {/* PLATFORM PROPERTIES */}
