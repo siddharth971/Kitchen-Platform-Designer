@@ -23,6 +23,8 @@ export const PLATFORM_DEFAULTS = {
   overhangFrontMm: 25,
   overhangSideMm: 0,
   overhangBackMm: 0,
+  overhangLeftMm: 0,
+  overhangRightMm: 0,
   maxPieceLengthGraniteMm: 2400,
   minCutoutEdgeDistanceMm: 75,
   minSeamCutoutDistanceMm: 150,
