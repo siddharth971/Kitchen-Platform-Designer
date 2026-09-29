@@ -122,4 +122,29 @@ Sinks, hobs, cabinets, appliances, and utilities must have real dimensions, cuto
 - Clearly marked with `PLACEHOLDER` comments to prevent fake compliance claims.
 - **Procedural 3D visualization (`ObjectRenderer.ts`)**: Renders components with recognizable visual cues (sink basins and faucets, hob burner rings, cabinet plinths and door splits, color-coded utility point indicators) without loading external heavy GLTF models during MVP.
 
+---
 
+## 9. Validation & Measurement Architecture (Section 13 & Phase 4)
+
+### Context
+Design validation (safety clearances, material bridge constraints, room containment) and CAD measurement tools must run smoothly in real time without bogging down the 3D scene or coupling domain business rules to UI frameworks.
+
+### Decision
+- **Pure Domain Engine (`core/validation/index.ts`)**: All geometric and safety checks run as pure functional predicates. Evaluates sink-hob distance, stone bridge thickness, cutout containment, window sill clashes, ventilation clearances, and room boundaries.
+- **Pure CAD Snap & Measure (`core/geometry/measurement/index.ts`)**: Analytical 3D Euclidean distance and axis delta computations with vertex snapping within a calibrated screen-space / scene-space radius.
+- **Dedicated Renderer (`engine/MeasurementRenderer.ts`)**: Renders measurement lines, arrows, dimension labels, and snap indicator spheres with standard Babylon DynamicTexture / lines, completely isolated from room and platform meshes.
+
+---
+
+## 10. Estimation & Dynamic Workshop Costing (Section 12 & Phase 5)
+
+### Context
+Countertop fabrication pricing depends on fluctuating material costs, square-foot vs. square-meter billing, edge polishing profiles, cutouts, labor, and tax. Hardcoding rates or baking prices into platform objects leads to state corruption and inflexible quotations.
+
+### Decision
+- **Decoupled Pricing Store (`store/pricingSlice.ts`)**: Platform geometry objects store only physical specifications (dimensions, material ID, edge type). Pricing rates live in an independent `PricingConfig` store slice.
+- **Pure Functional Estimator (`core/estimation/index.ts`)**: `estimateProject(project, pricing)` is a deterministic calculation that yields itemized line items, subtotal, discounts, tax, and rounded grand total.
+- **Gross vs. Net Stone Billing**: Supports both industry standard billing paradigms:
+  - Gross billing: applies workshop waste margin (default 8%) over raw bounding stone area.
+  - Net billing: charges exact finished surface area.
+- **Export Formats**: Provides zero-dependency formatted plaintext and standard RFC 4180 CSV export for direct integration into workshop spreadsheets and client invoicing.

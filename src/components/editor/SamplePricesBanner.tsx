@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 export function SamplePricesBanner() {
   const sampleBannerDismissed = useAppStore((state) => state.sampleBannerDismissed);
   const dismissSampleBanner = useAppStore((state) => state.dismissSampleBanner);
+  const setEstimationOpen = useAppStore((state) => state.setEstimationOpen);
 
   if (sampleBannerDismissed) return null;
 
@@ -23,12 +24,12 @@ export function SamplePricesBanner() {
         <Button
           variant="outline"
           size="sm"
-          className="h-6 text-[11px] border-amber-500/30 hover:bg-amber-500/20"
+          className="h-6 text-[11px] border-amber-500/30 hover:bg-amber-500/20 cursor-pointer"
           onClick={() => {
-            alert("Pricing configuration will be editable in Phase 5. Rates are currently sample placeholders.");
+            setEstimationOpen(true);
           }}
         >
-          View Rates
+          View / Edit Rates
         </Button>
         <button
           onClick={dismissSampleBanner}

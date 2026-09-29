@@ -14,6 +14,7 @@ import {
   Save,
   ShieldCheck,
   AlertTriangle,
+  Calculator,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -42,6 +43,8 @@ export function TopBar() {
   const setValidationDrawerOpen = useAppStore((state) => state.setValidationDrawerOpen);
 
   const report = useMemo(() => runProjectValidation(project), [project]);
+  const estimationOpen = useAppStore((state) => state.estimationOpen);
+  const setEstimationOpen = useAppStore((state) => state.setEstimationOpen);
 
   const handleUndo = () => {
     const prev = undo();
@@ -237,6 +240,19 @@ export function TopBar() {
               : `${report.errorsCount}E ${report.warningsCount}W`}
           </span>
         </button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className={`h-8 gap-1.5 text-xs cursor-pointer ${
+            estimationOpen ? "bg-primary text-primary-foreground border-primary" : ""
+          }`}
+          onClick={() => setEstimationOpen(!estimationOpen)}
+          title="Open Cost Estimation (E)"
+        >
+          <Calculator className="w-3.5 h-3.5" />
+          <span>Estimate</span>
+        </Button>
 
         <Button
           variant="default"

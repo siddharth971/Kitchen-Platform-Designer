@@ -2,9 +2,40 @@
 
 All notable changes to the Kitchen Platform Designer project will be documented in this file.
 
-## [Unreleased] - Phase 4
+## [Unreleased] - Phase 5
 
 ### Added
+- **Phase 5: Estimation Engine & Quotation Panel**:
+  - `core/estimation/index.ts`: Pure domain estimation engine (zero React/Babylon deps) providing itemized cost breakdowns:
+    - Material slab billing: Gross area (with configurable waste margin %) vs. Net area (exact finished stone)
+    - Finished edge profiling per running foot
+    - Backsplash area pricing
+    - Cutout fabrication charges (sink, hob, custom)
+    - Cabinetry pricing per running foot
+    - Fixed charges (installation, workshop labour)
+    - Polish charges per running foot
+    - Discounts (percentage or flat amount)
+    - Tax calculation (configurable GST %)
+    - Grand total rounding options (integer, tenths, none)
+    - Dynamic currency formatting (`₹`, `$`, `€`, `£`, etc.)
+    - Formatted Plaintext & RFC 4180 CSV quotation generation
+  - `store/pricingSlice.ts`: Zustand slice for managing dynamic `PricingConfig` (editable workshop rates, tax, discounts, billing modes).
+  - `components/editor/EstimationPanel.tsx`: Full-height interactive quote slide-over drawer with:
+    - Real-time line item breakdown grouped by category with quantity, rate, and amount
+    - Gross vs. net billing mode toggles and waste margin adjustment
+    - Collapsible rate configuration editor for materials, edge types, cutouts, cabinets, labor, and tax
+    - Discount controls (% or flat)
+    - One-click copy formatted quote to clipboard
+    - One-click CSV export download (`quotation-[project].csv`)
+    - Browser print trigger for clean client-ready estimate printouts
+  - `components/editor/TopBar.tsx`: Added "Estimate" button with calculator icon (toggles EstimationPanel).
+  - `components/editor/SamplePricesBanner.tsx`: "View / Edit Rates" button opens EstimationPanel directly.
+  - Keyboard shortcut `E` added in `EditorLayout.tsx` to toggle EstimationPanel.
+  - Complete test suite: **94 unit tests** across **10 test suites** — all passing.
+  - ESLint: 0 errors, 0 warnings.
+  - TypeScript strict: 0 errors.
+
+## Phase 4: Measurement & Validation
 - **Phase 4: Measurement & Validation**:
   - `core/validation/index.ts`: Pure domain validation engine (zero React/Babylon deps) covering 7 rules:
     - Sink-to-hob separation (min 600 mm — fire/water hazard)

@@ -10,6 +10,7 @@ import { PropertiesPanel } from "./PropertiesPanel";
 import { StatusBar } from "./StatusBar";
 import { CatalogModal } from "./CatalogModal";
 import { ValidationDrawer } from "./ValidationDrawer";
+import { EstimationPanel } from "./EstimationPanel";
 
 export function EditorLayout() {
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number; z: number } | null>(null);
@@ -28,6 +29,8 @@ export function EditorLayout() {
   const setActiveMeasurementStart = useAppStore((state) => state.setActiveMeasurementStart);
   const setValidationDrawerOpen = useAppStore((state) => state.setValidationDrawerOpen);
   const validationDrawerOpen = useAppStore((state) => state.validationDrawerOpen);
+  const setEstimationOpen = useAppStore((state) => state.setEstimationOpen);
+  const estimationOpen = useAppStore((state) => state.estimationOpen);
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -116,12 +119,17 @@ export function EditorLayout() {
         case "D":
           setValidationDrawerOpen(!validationDrawerOpen);
           break;
+        // Estimation panel
+        case "e":
+        case "E":
+          setEstimationOpen(!estimationOpen);
+          break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo, setProject, setCameraMode, triggerFit, gridVisible, setGridVisible, snapEnabled, setSnapEnabled, selectObject, setActiveTool, setActiveMeasurementStart, setValidationDrawerOpen, validationDrawerOpen]);
+  }, [undo, redo, setProject, setCameraMode, triggerFit, gridVisible, setGridVisible, snapEnabled, setSnapEnabled, selectObject, setActiveTool, setActiveMeasurementStart, setValidationDrawerOpen, validationDrawerOpen, setEstimationOpen, estimationOpen]);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-background text-foreground">
@@ -153,6 +161,9 @@ export function EditorLayout() {
 
       {/* Design Validation Drawer */}
       <ValidationDrawer />
+
+      {/* Cost Estimation Panel */}
+      <EstimationPanel />
     </div>
   );
 }

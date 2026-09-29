@@ -26,6 +26,7 @@ export interface UiSlice {
   catalogTab: "sinks" | "hobs" | "cabinets" | "appliances" | "utilities";
   validationDrawerOpen: boolean;
   activeMeasurementStart: Point3D | null;
+  estimationOpen: boolean;
 
   setDisplayUnit: (unit: DisplayUnit) => void;
   setActiveTool: (tool: ActiveTool) => void;
@@ -41,6 +42,7 @@ export interface UiSlice {
   closeCatalog: () => void;
   setValidationDrawerOpen: (open: boolean) => void;
   setActiveMeasurementStart: (point: Point3D | null) => void;
+  setEstimationOpen: (open: boolean) => void;
 }
 
 export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
@@ -58,6 +60,7 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   catalogTab: "sinks",
   validationDrawerOpen: false,
   activeMeasurementStart: null,
+  estimationOpen: false,
 
   setDisplayUnit: (displayUnit) => set({ displayUnit }),
   setActiveTool: (activeTool) => set({ activeTool }),
@@ -73,4 +76,5 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   closeCatalog: () => set({ catalogOpen: false }),
   setValidationDrawerOpen: (validationDrawerOpen) => set({ validationDrawerOpen }),
   setActiveMeasurementStart: (activeMeasurementStart) => set({ activeMeasurementStart }),
+  setEstimationOpen: (estimationOpen) => set({ estimationOpen }),
 });
