@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import { createProjectSlice, type ProjectSlice } from "./projectSlice";
 import { createSelectionSlice, type SelectionSlice } from "./selectionSlice";
 import { createCameraSlice, type CameraSlice } from "./cameraSlice";
@@ -15,12 +16,43 @@ export type AppStore = ProjectSlice &
   PricingSlice &
   BusinessSlice;
 
-export const useAppStore = create<AppStore>()((...a) => ({
-  ...createProjectSlice(...a),
-  ...createSelectionSlice(...a),
-  ...createCameraSlice(...a),
-  ...createUiSlice(...a),
-  ...createHistorySlice(...a),
-  ...createPricingSlice(...a),
-  ...createBusinessSlice(...a),
-}));
+type PersistedAppStore = Pick<AppStore, "project">;
+
+export const PROJECT_STORAGE_KEY = "kpd-project";
+
+const serverStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => undefined,
+  removeItem: () => undefined,
+};
+
+const projectStorage = createJSONStorage<PersistedAppStore>(() => {
+  if (typeof window === "undefined") return serverStorage;
+
+  try {
+    return window.localStorage;
+  } catch {
+    return serverStorage;
+  }
+});
+
+export const useAppStore = create<AppStore>()(
+  persist(
+    (...a) => ({
+      ...createProjectSlice(...a),
+      ...createSelectionSlice(...a),
+      ...createCameraSlice(...a),
+      ...createUiSlice(...a),
+      ...createHistorySlice(...a),
+      ...createPricingSlice(...a),
+      ...createBusinessSlice(...a),
+    }),
+    {
+      name: PROJECT_STORAGE_KEY,
+      storage: projectStorage,
+      partialize: (state): PersistedAppStore => ({ project: state.project }),
+      skipHydration: true,
+      version: 1,
+    }
+  )
+);

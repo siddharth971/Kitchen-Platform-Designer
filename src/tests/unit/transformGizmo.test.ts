@@ -36,6 +36,7 @@ describe("gizmo transform commits", () => {
     const project = createInitialProject();
     const original = project.walls.find((wall) => wall.id === "wall-front")!;
     const originalCenterX = (original.start.x + original.end.x) / 2;
+    const originalLength = Math.hypot(original.end.x - original.start.x, original.end.z - original.start.z);
 
     const updated = applyTransformCommit(project, {
       objectId: original.id,
@@ -46,7 +47,7 @@ describe("gizmo transform commits", () => {
     });
     const wall = updated.walls.find((item) => item.id === original.id)!;
 
-    expect(Math.hypot(wall.end.x - wall.start.x, wall.end.z - wall.start.z)).toBeCloseTo(7200);
+    expect(Math.hypot(wall.end.x - wall.start.x, wall.end.z - wall.start.z)).toBeCloseTo(originalLength * 2);
     expect((wall.start.x + wall.end.x) / 2).toBeCloseTo(originalCenterX + 100);
     expect((wall.start.z + wall.end.z) / 2).toBeCloseTo(200);
   });

@@ -3,11 +3,11 @@ import type { Material, EdgeProfile } from "@/types/catalog";
 import type { Room } from "@/types/project";
 
 export const DEFAULT_ROOM_PRESET: Room = {
-  length: 3600, // mm (X axis)
-  width: 3000,  // mm (Z axis)
+  length: 7200, // mm (X axis)
+  width: 6000,  // mm (Z axis)
   height: 3000, // mm (Y axis)
   wallThickness: 150, // mm
-  floorColor: "#e5e7eb",
+  floorColor: "#000611",
   wallColor: "#f9fafb",
   ceilingVisible: false,
 };

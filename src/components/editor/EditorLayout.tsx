@@ -35,6 +35,12 @@ export function EditorLayout() {
   const setExportModalOpen = useAppStore((state) => state.setExportModalOpen);
   const exportModalOpen = useAppStore((state) => state.exportModalOpen);
 
+  // Browser storage is unavailable during server rendering. Rehydrate the saved
+  // project after this client component mounts so room edits survive refreshes.
+  useEffect(() => {
+    void useAppStore.persist.rehydrate();
+  }, []);
+
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
