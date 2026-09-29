@@ -1,0 +1,89 @@
+{
+  "app": {
+    "title": "किचन प्लेटफॉर्म डिज़ाइनर",
+    "subtitle": "3D काउंटरटॉप एवं रसोई योजना प्रणाली"
+  },
+  "banner": {
+    "samplePricingNotice": "नमूना मूल्य दिखाए गए हैं। कोटेशन से पहले अपनी वास्तविक दरें भरें।",
+    "dismiss": "हटाएं",
+    "configure": "दरें सेट करें"
+  },
+  "topbar": {
+    "undo": "पूर्ववत (Undo)",
+    "redo": "फिर से करें (Redo)",
+    "save": "सहेजें",
+    "export": "निर्यात करें",
+    "view3D": "3D दृश्य",
+    "view2D": "2D नक्शा",
+    "settings": "सेटिंग्स",
+    "fit": "स्क्रीन में फिट करें"
+  },
+  "camera": {
+    "perspective": "पर्सपेक्टिव",
+    "top": "ऊपर से दृश्य",
+    "front": "सामने का दृश्य",
+    "left": "बाएं से दृश्य",
+    "right": "दाएं से दृश्य",
+    "isometric": "आइसोमेट्रिक"
+  },
+  "tools": {
+    "select": "चुनें",
+    "room": "कमरा",
+    "wall": "दीवार",
+    "platform": "काउंटरटॉप",
+    "cabinet": "कैबिनेट",
+    "appliance": "उपकरण",
+    "measure": "मापें"
+  },
+  "properties": {
+    "room": {
+      "title": "कमरे के आयाम",
+      "length": "लंबाई (X)",
+      "depth": "गहराई (Z)",
+      "height": "ऊंचाई (Y)",
+      "wallThickness": "दीवार की मोटाई",
+      "wallColor": "दीवार का रंग",
+      "floorColor": "फर्श का रंग",
+      "ceiling": "छत दृश्यता"
+    },
+    "wall": {
+      "title": "दीवार के गुण",
+      "selected": "चयनित दीवार",
+      "thickness": "मोटाई",
+      "height": "ऊंचाई",
+      "color": "रंग",
+      "openings": "दरवाजे / खिड़कियां",
+      "addOpening": "खिड़की/दरवाजा जोड़ें",
+      "noOpenings": "कोई ओपनिंग नहीं (ठोस दीवार)",
+      "openingType": "प्रकार",
+      "offset": "दीवार पर दूरी (Offset)",
+      "width": "चौड़ाई",
+      "sillHeight": "सिल ऊंचाई (फर्श से)",
+      "removeOpening": "हटाएं"
+    },
+    "noSelection": "प्रॉपर्टी देखने व बदलने के लिए किसी वस्तु का चयन करें।"
+  },
+  "openings": {
+    "window": "खिड़की",
+    "door": "दरवाजा",
+    "passage": "रास्ता (Passage)"
+  },
+  "status": {
+    "cursor": "कर्सर",
+    "selection": "चयन",
+    "none": "कोई नहीं",
+    "room": "कमरा",
+    "wall": "दीवार",
+    "grid": "ग्रिड",
+    "snap": "स्नैप",
+    "on": "चालू",
+    "off": "बंद",
+    "unit": "इकाई"
+  },
+  "units": {
+    "mm": "मिलीमीटर (mm)",
+    "cm": "सेंटीमीटर (cm)",
+    "inch": "इंच (in)",
+    "feetInch": "फीट और इंच (ft/in)"
+  }
+}

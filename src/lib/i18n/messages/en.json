@@ -1,0 +1,89 @@
+{
+  "app": {
+    "title": "Kitchen Platform Designer",
+    "subtitle": "3D Countertop & Kitchen Planning System"
+  },
+  "banner": {
+    "samplePricingNotice": "Sample prices shown. Replace with your actual supplier rates before quoting.",
+    "dismiss": "Dismiss",
+    "configure": "Configure Rates"
+  },
+  "topbar": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "save": "Save",
+    "export": "Export",
+    "view3D": "3D View",
+    "view2D": "2D Plan",
+    "settings": "Settings",
+    "fit": "Fit View"
+  },
+  "camera": {
+    "perspective": "Perspective",
+    "top": "Top View",
+    "front": "Front View",
+    "left": "Left View",
+    "right": "Right View",
+    "isometric": "Isometric"
+  },
+  "tools": {
+    "select": "Select",
+    "room": "Room",
+    "wall": "Wall",
+    "platform": "Countertop",
+    "cabinet": "Cabinets",
+    "appliance": "Appliances",
+    "measure": "Measure"
+  },
+  "properties": {
+    "room": {
+      "title": "Room Dimensions",
+      "length": "Length (X)",
+      "depth": "Depth (Z)",
+      "height": "Height (Y)",
+      "wallThickness": "Wall Thickness",
+      "wallColor": "Wall Color",
+      "floorColor": "Floor Color",
+      "ceiling": "Ceiling Visibility"
+    },
+    "wall": {
+      "title": "Wall Properties",
+      "selected": "Selected Wall",
+      "thickness": "Thickness",
+      "height": "Height",
+      "color": "Color",
+      "openings": "Wall Openings",
+      "addOpening": "Add Opening",
+      "noOpenings": "No openings (solid wall)",
+      "openingType": "Type",
+      "offset": "Offset along wall",
+      "width": "Width",
+      "sillHeight": "Sill Height (from floor)",
+      "removeOpening": "Remove"
+    },
+    "noSelection": "Select an element to inspect and edit its properties."
+  },
+  "openings": {
+    "window": "Window",
+    "door": "Door",
+    "passage": "Passage"
+  },
+  "status": {
+    "cursor": "Cursor",
+    "selection": "Selection",
+    "none": "None",
+    "room": "Room",
+    "wall": "Wall",
+    "grid": "Grid",
+    "snap": "Snap",
+    "on": "ON",
+    "off": "OFF",
+    "unit": "Unit"
+  },
+  "units": {
+    "mm": "Millimetres (mm)",
+    "cm": "Centimetres (cm)",
+    "inch": "Inches (in)",
+    "feetInch": "Feet & Inches (ft/in)"
+  }
+}

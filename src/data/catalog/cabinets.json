@@ -1,0 +1,110 @@
+[
+  {
+    "id": "cab-base-600",
+    "name": "Base Cabinet 600mm",
+    "type": "base",
+    "width": 600,
+    "depth": 560,
+    "height": 830,
+    "doors": 2,
+    "drawers": 0,
+    "plinthHeight": 100,
+    "comment": "PLACEHOLDER — replace with actual dimensions"
+  },
+  {
+    "id": "cab-base-450",
+    "name": "Base Cabinet 450mm",
+    "type": "base",
+    "width": 450,
+    "depth": 560,
+    "height": 830,
+    "doors": 1,
+    "drawers": 0,
+    "plinthHeight": 100,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "cab-base-300",
+    "name": "Base Cabinet 300mm",
+    "type": "base",
+    "width": 300,
+    "depth": 560,
+    "height": 830,
+    "doors": 1,
+    "drawers": 0,
+    "plinthHeight": 100,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "cab-base-750",
+    "name": "Base Cabinet 750mm",
+    "type": "base",
+    "width": 750,
+    "depth": 560,
+    "height": 830,
+    "doors": 2,
+    "drawers": 0,
+    "plinthHeight": 100,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "cab-base-900",
+    "name": "Base Cabinet 900mm",
+    "type": "base",
+    "width": 900,
+    "depth": 560,
+    "height": 830,
+    "doors": 2,
+    "drawers": 0,
+    "plinthHeight": 100,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "cab-drawer-600",
+    "name": "Drawer Cabinet 600mm",
+    "type": "base",
+    "width": 600,
+    "depth": 560,
+    "height": 830,
+    "doors": 0,
+    "drawers": 3,
+    "plinthHeight": 100,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "cab-wall-600",
+    "name": "Wall Cabinet 600mm",
+    "type": "wall",
+    "width": 600,
+    "depth": 350,
+    "height": 700,
+    "doors": 2,
+    "drawers": 0,
+    "plinthHeight": 0,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "cab-wall-450",
+    "name": "Wall Cabinet 450mm",
+    "type": "wall",
+    "width": 450,
+    "depth": 350,
+    "height": 700,
+    "doors": 1,
+    "drawers": 0,
+    "plinthHeight": 0,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "cab-tall-600",
+    "name": "Tall Cabinet 600mm",
+    "type": "tall",
+    "width": 600,
+    "depth": 560,
+    "height": 2100,
+    "doors": 2,
+    "drawers": 2,
+    "plinthHeight": 100,
+    "comment": "PLACEHOLDER"
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "sink-single-600",
+    "name": "Single Bowl Sink (600mm)",
+    "type": "single",
+    "mountingType": "topmount",
+    "width": 600,
+    "depth": 500,
+    "height": 200,
+    "cutoutWidth": 560,
+    "cutoutDepth": 460,
+    "requiredClearance": 50,
+    "comment": "PLACEHOLDER — replace with actual product"
+  },
+  {
+    "id": "sink-double-800",
+    "name": "Double Bowl Sink (800mm)",
+    "type": "double",
+    "mountingType": "topmount",
+    "width": 800,
+    "depth": 500,
+    "height": 200,
+    "cutoutWidth": 760,
+    "cutoutDepth": 460,
+    "requiredClearance": 50,
+    "comment": "PLACEHOLDER — replace with actual product"
+  },
+  {
+    "id": "sink-undermount-600",
+    "name": "Undermount Single Bowl (600mm)",
+    "type": "single",
+    "mountingType": "undermount",
+    "width": 600,
+    "depth": 480,
+    "height": 220,
+    "cutoutWidth": 570,
+    "cutoutDepth": 440,
+    "requiredClearance": 60,
+    "comment": "PLACEHOLDER — replace with actual product"
+  },
+  {
+    "id": "sink-farmhouse-750",
+    "name": "Farmhouse / Apron Front Sink (750mm)",
+    "type": "single",
+    "mountingType": "farmhouse",
+    "width": 750,
+    "depth": 500,
+    "height": 250,
+    "cutoutWidth": 720,
+    "cutoutDepth": 460,
+    "requiredClearance": 60,
+    "comment": "PLACEHOLDER — replace with actual product"
+  }
+]

@@ -1,0 +1,89 @@
+{
+  "app": {
+    "title": "કિચન પ્લેટફોર્મ ડિઝાઇનર",
+    "subtitle": "3D કાઉન્ટરટોપ અને રસોડું આયોજન સિસ્ટમ"
+  },
+  "banner": {
+    "samplePricingNotice": "નમૂનાના ભાવ દર્શાવેલ છે. ક્વોટેશન આપતા પહેલા તમારા સાચા ભાવ દાખલ કરો.",
+    "dismiss": "બંધ કરો",
+    "configure": "ભાવ સેટ કરો"
+  },
+  "topbar": {
+    "undo": "અનડૂ",
+    "redo": "રીડૂ",
+    "save": "સાચવો",
+    "export": "એક્સપોર્ટ",
+    "view3D": "3D વ્યૂ",
+    "view2D": "2D નકશો",
+    "settings": "સેટિંગ્સ",
+    "fit": "સ્ક્રીનમાં ફિટ કરો"
+  },
+  "camera": {
+    "perspective": "પર્સ્પેક્ટિવ",
+    "top": "ટોપ વ્યૂ",
+    "front": "સામેનો વ્યૂ",
+    "left": "ડાબો વ્યૂ",
+    "right": "જમણો વ્યૂ",
+    "isometric": "આઇસોમેટ્રિક"
+  },
+  "tools": {
+    "select": "પસંદ કરો",
+    "room": "રૂમ",
+    "wall": "દીવાલ",
+    "platform": "કાઉન્ટરટોપ",
+    "cabinet": "કેબિનેટ",
+    "appliance": "સાધનો",
+    "measure": "માપો"
+  },
+  "properties": {
+    "room": {
+      "title": "રૂમના માપ",
+      "length": "લંબાઈ (X)",
+      "depth": "ઊંડાઈ (Z)",
+      "height": "ઊંચાઈ (Y)",
+      "wallThickness": "દીવાલની જાડાઈ",
+      "wallColor": "દીવાલનો રંગ",
+      "floorColor": "ભોંયતળિયાનો રંગ",
+      "ceiling": "છત દૃશ્યતા"
+    },
+    "wall": {
+      "title": "દીવાલના ગુણધર્મો",
+      "selected": "પસંદ કરેલ દીવાલ",
+      "thickness": "જાડાઈ",
+      "height": "ઊંચાઈ",
+      "color": "રંગ",
+      "openings": "બારી / દરવાજા",
+      "addOpening": "બારી/દરવાજો ઉમેરો",
+      "noOpenings": "કોઈ ઓપનિંગ નથી",
+      "openingType": "પ્રકાર",
+      "offset": "દીવાલ પર અંતર (Offset)",
+      "width": "પહોળાઈ",
+      "sillHeight": "સિલ ઊંચાઈ (તળિયેથી)",
+      "removeOpening": "કાઢી નાખો"
+    },
+    "noSelection": "પ્રોપર્ટી જોવા માટે કોઈપણ વસ્તુ પસંદ કરો."
+  },
+  "openings": {
+    "window": "બારી",
+    "door": "દરવાજો",
+    "passage": "રસ્તો (Passage)"
+  },
+  "status": {
+    "cursor": "કર્સર્સ",
+    "selection": "પસંદગી",
+    "none": "કંઈ નહીં",
+    "room": "રૂમ",
+    "wall": "દીવાલ",
+    "grid": "ગ્રીડ",
+    "snap": "સ્નેપ",
+    "on": "ચાલુ",
+    "off": "બંધ",
+    "unit": "એકમ"
+  },
+  "units": {
+    "mm": "મિલીમીટર (mm)",
+    "cm": "સેન્ટીમીટર (cm)",
+    "inch": "ઇંચ (in)",
+    "feetInch": "ફૂટ અને ઇંચ (ft/in)"
+  }
+}

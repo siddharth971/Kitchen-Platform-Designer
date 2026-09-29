@@ -1,0 +1,67 @@
+[
+  {
+    "id": "hob-gas-4b-600",
+    "name": "4 Burner Gas Hob (600mm)",
+    "hobType": "gas",
+    "burners": 4,
+    "width": 600,
+    "depth": 520,
+    "height": 50,
+    "cutoutWidth": 560,
+    "cutoutDepth": 480,
+    "requiredClearance": 50,
+    "comment": "PLACEHOLDER — replace with actual product"
+  },
+  {
+    "id": "hob-gas-3b-500",
+    "name": "3 Burner Gas Hob (500mm)",
+    "hobType": "gas",
+    "burners": 3,
+    "width": 500,
+    "depth": 520,
+    "height": 50,
+    "cutoutWidth": 460,
+    "cutoutDepth": 480,
+    "requiredClearance": 50,
+    "comment": "PLACEHOLDER — replace with actual product"
+  },
+  {
+    "id": "hob-gas-5b-900",
+    "name": "5 Burner Gas Hob (900mm)",
+    "hobType": "gas",
+    "burners": 5,
+    "width": 900,
+    "depth": 520,
+    "height": 55,
+    "cutoutWidth": 860,
+    "cutoutDepth": 480,
+    "requiredClearance": 60,
+    "comment": "PLACEHOLDER — replace with actual product"
+  },
+  {
+    "id": "hob-induction-4z-600",
+    "name": "4 Zone Induction Hob (600mm)",
+    "hobType": "induction",
+    "burners": 4,
+    "width": 600,
+    "depth": 520,
+    "height": 50,
+    "cutoutWidth": 560,
+    "cutoutDepth": 480,
+    "requiredClearance": 50,
+    "comment": "PLACEHOLDER — replace with actual product"
+  },
+  {
+    "id": "hob-gas-2b-300",
+    "name": "2 Burner Gas Hob (300mm)",
+    "hobType": "gas",
+    "burners": 2,
+    "width": 300,
+    "depth": 520,
+    "height": 45,
+    "cutoutWidth": 260,
+    "cutoutDepth": 480,
+    "requiredClearance": 40,
+    "comment": "PLACEHOLDER — replace with actual product"
+  }
+]

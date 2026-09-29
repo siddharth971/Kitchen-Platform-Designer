@@ -1,0 +1,93 @@
+[
+  {
+    "id": "appl-fridge-600",
+    "name": "Refrigerator (600mm)",
+    "category": "refrigerator",
+    "width": 600,
+    "depth": 650,
+    "height": 1800,
+    "clearance": { "left": 25, "right": 25, "top": 50, "back": 50 },
+    "powerPointRequired": true,
+    "waterPointRequired": false,
+    "drainPointRequired": false,
+    "comment": "PLACEHOLDER — replace with actual product dimensions"
+  },
+  {
+    "id": "appl-dishwasher-600",
+    "name": "Dishwasher (600mm)",
+    "category": "dishwasher",
+    "width": 600,
+    "depth": 560,
+    "height": 830,
+    "clearance": { "left": 10, "right": 10, "top": 10, "back": 30 },
+    "powerPointRequired": true,
+    "waterPointRequired": true,
+    "drainPointRequired": true,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "appl-microwave-450",
+    "name": "Microwave Oven (450mm)",
+    "category": "microwave",
+    "width": 450,
+    "depth": 380,
+    "height": 280,
+    "clearance": { "left": 20, "right": 20, "top": 30, "back": 50 },
+    "powerPointRequired": true,
+    "waterPointRequired": false,
+    "drainPointRequired": false,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "appl-oven-600",
+    "name": "Built-in Oven (600mm)",
+    "category": "oven",
+    "width": 600,
+    "depth": 560,
+    "height": 600,
+    "clearance": { "left": 10, "right": 10, "top": 30, "back": 50 },
+    "powerPointRequired": true,
+    "waterPointRequired": false,
+    "drainPointRequired": false,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "appl-chimney-600",
+    "name": "Kitchen Chimney (600mm)",
+    "category": "chimney",
+    "width": 600,
+    "depth": 480,
+    "height": 700,
+    "clearance": { "left": 0, "right": 0, "top": 0, "back": 0 },
+    "powerPointRequired": true,
+    "waterPointRequired": false,
+    "drainPointRequired": false,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "appl-washing-machine-600",
+    "name": "Washing Machine (600mm)",
+    "category": "washing-machine",
+    "width": 600,
+    "depth": 560,
+    "height": 850,
+    "clearance": { "left": 15, "right": 15, "top": 20, "back": 50 },
+    "powerPointRequired": true,
+    "waterPointRequired": true,
+    "drainPointRequired": true,
+    "comment": "PLACEHOLDER"
+  },
+  {
+    "id": "appl-ro-300",
+    "name": "Water Purifier / RO (300mm)",
+    "category": "water-purifier",
+    "width": 300,
+    "depth": 300,
+    "height": 500,
+    "clearance": { "left": 10, "right": 10, "top": 10, "back": 20 },
+    "powerPointRequired": true,
+    "waterPointRequired": true,
+    "drainPointRequired": true,
+    "comment": "PLACEHOLDER"
+  }
+]
