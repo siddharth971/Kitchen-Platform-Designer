@@ -6,7 +6,7 @@ import { formatLength, parseLength, formatArea, formatRunningLength } from "@/co
 import { getWallLength, calculateWallAreas } from "@/core/geometry/wall";
 import { calculatePlatformQuantities } from "@/core/geometry/platform";
 import { computeEdgeClearance } from "@/core/geometry/cutout";
-import { SAMPLE_EDGE_PROFILES, SAMPLE_MATERIALS } from "@/data/presets";
+import { SAMPLE_EDGE_PROFILES } from "@/data/presets";
 import { generateId } from "@/lib/id";
 import type { WallOpening } from "@/types/project";
 import type { PlatformShape, CornerStyle, Cutout } from "@/types/kitchen";
@@ -331,47 +331,23 @@ export function PropertiesPanel() {
               </div>
 
               {selectedPlatform.backsplash?.enabled && (
-                <div className="space-y-2 pt-1">
-                  <div className="grid grid-cols-2 gap-2 items-center">
-                    <Label className="text-xs text-muted-foreground">Backsplash Height</Label>
-                    <Input
-                      defaultValue={formatLength(selectedPlatform.backsplash.height, displayUnit)}
-                      key={`bsh-${selectedPlatform.id}-${selectedPlatform.backsplash.height}-${displayUnit}`}
-                      className="h-8 text-xs font-mono"
-                      onBlur={(e) =>
-                        handleDimensionCommit(e.target.value, (val) =>
-                          updatePlatform(selectedPlatform.id, {
-                            backsplash: { ...selectedPlatform.backsplash, height: val },
-                          })
-                        )
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor={`vertical-stone-${selectedPlatform.id}`} className="text-xs text-muted-foreground">Vertical Stone</Label>
-                    <select
-                      id={`vertical-stone-${selectedPlatform.id}`}
-                      value={selectedPlatform.backsplash.materialId ?? ""}
-                      onChange={(event) => {
-                        pushHistory(project);
+                <div className="grid grid-cols-2 gap-2 items-center pt-1">
+                  <Label className="text-xs text-muted-foreground">Backsplash Height</Label>
+                  <Input
+                    defaultValue={formatLength(selectedPlatform.backsplash.height, displayUnit)}
+                    key={`bsh-${selectedPlatform.id}-${selectedPlatform.backsplash.height}-${displayUnit}`}
+                    className="h-8 text-xs font-mono"
+                    onBlur={(e) =>
+                      handleDimensionCommit(e.target.value, (val) =>
                         updatePlatform(selectedPlatform.id, {
-                          backsplash: {
-                            ...selectedPlatform.backsplash,
-                            materialId: event.currentTarget.value || undefined,
-                          },
-                        });
-                      }}
-                      className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs"
-                    >
-                      <option value="">Match countertop material</option>
-                      {SAMPLE_MATERIALS.map((material) => (
-                        <option key={material.id} value={material.id}>{material.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                          backsplash: { ...selectedPlatform.backsplash, height: val },
+                        })
+                      )
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                    }}
+                  />
                 </div>
               )}
             </div>

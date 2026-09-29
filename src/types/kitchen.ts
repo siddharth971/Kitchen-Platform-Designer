@@ -1,22 +1,12 @@
 import type { Point2D, Point3D } from "./geometry";
 
-export type PlatformShape = "straight" | "l-shaped" | "u-shaped" | "island" | "peninsula" | "custom";
+export type PlatformShape = "straight" | "l-shaped" | "u-shaped" | "island" | "custom";
 export type CornerStyle = "square" | "miter" | "custom";
-export type CountertopFinish = "polished" | "honed" | "leathered" | "matte" | "textured";
 
 export interface PlatformOverhang {
   front: number; // mm (e.g. 25)
-  /** @deprecated Use left/right. Retained for older saved projects. */
   side: number;  // mm (e.g. 0)
   back: number;  // mm (e.g. 0)
-  left?: number;
-  right?: number;
-}
-
-export interface PlatformWaterfall {
-  left: boolean;
-  right: boolean;
-  materialId?: string;
 }
 
 export interface PlatformBacksplash {
@@ -68,14 +58,10 @@ export interface CountertopPlatform extends EditableObjectProperties {
   workingHeight: number; // mm floor to top of slab (default 850)
   slabThickness: number; // mm (default 20)
   materialId: string;
-  finish?: CountertopFinish;
-  textureScaleMm?: number;
-  textureRotation?: number;
   edgeProfileId: string;
   cornerStyle: CornerStyle;
   overhang: PlatformOverhang;
   backsplash: PlatformBacksplash;
-  waterfall?: PlatformWaterfall;
   cutouts: Cutout[];
 }
 

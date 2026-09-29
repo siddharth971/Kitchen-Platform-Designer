@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Eye, LockKeyhole } from "lucide-react";
 import { parseLength } from "@/core/units";
 import { SAMPLE_MATERIALS } from "@/data/presets";
@@ -39,6 +39,7 @@ export function UniversalObjectControls() {
   const updateSink = useAppStore((state) => state.updateSink);
   const updateHob = useAppStore((state) => state.updateHob);
   const [error, setError] = useState<string | null>(null);
+  const opacityHistoryStarted = useRef(false);
 
   if (!selectedId) return null;
 
@@ -276,6 +277,35 @@ export function UniversalObjectControls() {
               <option key={material.id} value={material.id}>{material.name}</option>
             ))}
           </select>
+        </div>
+        <div className="grid grid-cols-[52px_1fr_34px] items-center gap-2">
+          <Label htmlFor={`opacity-${object.id}`} className="text-[10px] text-muted-foreground">Opacity</Label>
+          <input
+            id={`opacity-${object.id}`}
+            type="range"
+            min="0.1"
+            max="1"
+            step="0.05"
+            value={object.opacity ?? 1}
+            disabled={locked}
+            className="w-full accent-primary disabled:opacity-50"
+            onPointerDown={() => {
+              if (!opacityHistoryStarted.current) {
+                pushHistory(project);
+                opacityHistoryStarted.current = true;
+              }
+            }}
+            onPointerUp={() => { opacityHistoryStarted.current = false; }}
+            onKeyDown={() => {
+              if (!opacityHistoryStarted.current) {
+                pushHistory(project);
+                opacityHistoryStarted.current = true;
+              }
+            }}
+            onKeyUp={() => { opacityHistoryStarted.current = false; }}
+            onChange={(event) => updateObject({ opacity: Number(event.currentTarget.value) })}
+          />
+          <span className="text-right font-mono text-[10px] text-muted-foreground">{Math.round((object.opacity ?? 1) * 100)}%</span>
         </div>
       </div>
 

@@ -272,7 +272,7 @@ export class PlatformRenderer {
             toSceneLength(platform.position.z + bsThickScene / 2)
           );
           bsMesh.material = this.getSurfaceMaterial(
-            platform.backsplash.materialId ?? platform.materialId,
+            platform.backsplash.materialId,
             this.backsplashMaterial,
             `backsplash-${platform.id}`,
             platform.length,
@@ -296,7 +296,7 @@ export class PlatformRenderer {
             toSceneLength(platform.position.z + bsThickScene / 2)
           );
           bsMeshA.material = this.getSurfaceMaterial(
-            platform.backsplash.materialId ?? platform.materialId,
+            platform.backsplash.materialId,
             this.backsplashMaterial,
             `backsplash-a-${platform.id}`,
             platform.lengthA,
@@ -320,7 +320,7 @@ export class PlatformRenderer {
             toSceneLength(platform.position.z + platform.lengthB / 2)
           );
           bsMeshB.material = this.getSurfaceMaterial(
-            platform.backsplash.materialId ?? platform.materialId,
+            platform.backsplash.materialId,
             this.backsplashMaterial,
             `backsplash-b-${platform.id}`,
             platform.lengthB,
@@ -344,7 +344,7 @@ export class PlatformRenderer {
             toSceneLength(platform.position.z + bsThickScene / 2)
           );
           bsBase.material = this.getSurfaceMaterial(
-            platform.backsplash.materialId ?? platform.materialId,
+            platform.backsplash.materialId,
             this.backsplashMaterial,
             `backsplash-base-${platform.id}`,
             platform.lengthA,
@@ -364,7 +364,7 @@ export class PlatformRenderer {
             toSceneLength(platform.position.z + platform.lengthB / 2)
           );
           leftB.material = this.getSurfaceMaterial(
-            platform.backsplash.materialId ?? platform.materialId,
+            platform.backsplash.materialId,
             this.backsplashMaterial,
             `backsplash-left-${platform.id}`,
             platform.lengthB,
@@ -384,7 +384,7 @@ export class PlatformRenderer {
             toSceneLength(platform.position.z + platform.lengthB / 2)
           );
           rightB.material = this.getSurfaceMaterial(
-            platform.backsplash.materialId ?? platform.materialId,
+            platform.backsplash.materialId,
             this.backsplashMaterial,
             `backsplash-right-${platform.id}`,
             platform.lengthB,

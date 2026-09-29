@@ -118,8 +118,6 @@ export function Toolbox() {
             front: PLATFORM_DEFAULTS.overhangFrontMm,
             side: PLATFORM_DEFAULTS.overhangSideMm,
             back: PLATFORM_DEFAULTS.overhangBackMm,
-            left: PLATFORM_DEFAULTS.overhangLeftMm,
-            right: PLATFORM_DEFAULTS.overhangRightMm,
           },
           backsplash: {
             enabled: true,
