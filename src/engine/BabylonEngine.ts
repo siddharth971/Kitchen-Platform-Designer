@@ -13,9 +13,12 @@ import { GridManager } from "./GridManager";
 import { WallRenderer } from "./WallRenderer";
 import { PlatformRenderer } from "./PlatformRenderer";
 import { ObjectRenderer } from "./ObjectRenderer";
+import { MeasurementRenderer } from "./MeasurementRenderer";
 import { SelectionManager, type SelectionCallback, type CursorPositionCallback } from "./SelectionManager";
 import type { Room, Wall } from "@/types/project";
 import type { CountertopPlatform, SinkInstance, HobInstance, Cabinet, ApplianceInstance, UtilityPoint } from "@/types/kitchen";
+import type { MeasurementItem } from "@/core/geometry/measurement";
+import type { Point3D } from "@/types/geometry";
 import type { CameraPresetMode } from "@/store/cameraSlice";
 
 export class BabylonEngine {
@@ -26,6 +29,7 @@ export class BabylonEngine {
   public wallRenderer: WallRenderer;
   public platformRenderer: PlatformRenderer;
   public objectRenderer: ObjectRenderer;
+  public measurementRenderer: MeasurementRenderer;
   public selectionManager: SelectionManager;
 
   private canvas: HTMLCanvasElement;
@@ -63,6 +67,7 @@ export class BabylonEngine {
     this.wallRenderer = new WallRenderer(this.scene);
     this.platformRenderer = new PlatformRenderer(this.scene);
     this.objectRenderer = new ObjectRenderer(this.scene);
+    this.measurementRenderer = new MeasurementRenderer(this.scene);
     this.selectionManager = new SelectionManager(this.scene, canvas, onSelect, onCursorMove);
 
     // Render-On-Demand setup
@@ -146,14 +151,30 @@ export class BabylonEngine {
     cabinets: Cabinet[],
     appliances: ApplianceInstance[],
     utilityPoints: UtilityPoint[],
-    selectedId: string | null,
-    gridVisible: boolean
+    measurements: MeasurementItem[] = [],
+    selectedId: string | null = null,
+    gridVisible: boolean = true
   ): void {
     this.wallRenderer.updateRoomAndWalls(room, walls, selectedId);
     this.platformRenderer.updatePlatforms(platforms, selectedId);
     this.objectRenderer.updateAll(sinks, hobs, cabinets, appliances, utilityPoints, selectedId);
+    this.measurementRenderer.updateMeasurements(measurements);
     this.gridManager.updateGrid(room, gridVisible);
     this.markDirty(5);
+  }
+
+  public updateMeasurementPreview(
+    start: Point3D | null,
+    current: Point3D | null,
+    snappedPoint: Point3D | null
+  ): void {
+    this.measurementRenderer.updatePreview(start, current, snappedPoint);
+    this.markDirty(2);
+  }
+
+  public clearMeasurementPreview(): void {
+    this.measurementRenderer.clearPreview();
+    this.markDirty(2);
   }
 
   public setCameraMode(mode: CameraPresetMode): void {
@@ -178,6 +199,7 @@ export class BabylonEngine {
     }
 
     this.selectionManager.dispose();
+    this.measurementRenderer.dispose();
     this.objectRenderer.dispose();
     this.platformRenderer.dispose();
     this.wallRenderer.dispose();

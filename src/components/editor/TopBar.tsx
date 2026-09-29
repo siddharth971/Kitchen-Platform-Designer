@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useAppStore } from "@/store";
 import type { CameraPresetMode } from "@/store/cameraSlice";
 import type { DisplayUnit } from "@/types/project";
+import { runProjectValidation } from "@/core/validation";
 import {
   Undo2,
   Redo2,
@@ -11,6 +12,8 @@ import {
   Camera,
   ChevronDown,
   Save,
+  ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -35,6 +38,10 @@ export function TopBar() {
   const undo = useAppStore((state) => state.undo);
   const redo = useAppStore((state) => state.redo);
   const setProject = useAppStore((state) => state.setProject);
+  const validationDrawerOpen = useAppStore((state) => state.validationDrawerOpen);
+  const setValidationDrawerOpen = useAppStore((state) => state.setValidationDrawerOpen);
+
+  const report = useMemo(() => runProjectValidation(project), [project]);
 
   const handleUndo = () => {
     const prev = undo();
@@ -70,7 +77,7 @@ export function TopBar() {
           <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block"></span>
           <span>Kitchen Platform Designer</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono font-medium">
-            v0.2 Phase 1
+            v0.4 Phase 4
           </span>
         </div>
 
@@ -206,6 +213,30 @@ export function TopBar() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Validation Badge */}
+        <button
+          onClick={() => setValidationDrawerOpen(!validationDrawerOpen)}
+          className={`flex items-center gap-1.5 h-8 px-3 rounded-md border text-xs font-medium transition-all cursor-pointer ${
+            report.isValid
+              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20"
+              : report.errorsCount > 0
+              ? "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-400 hover:bg-red-500/20"
+              : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20"
+          }`}
+          title="Open Design Validation"
+        >
+          {report.isValid ? (
+            <ShieldCheck className="w-3.5 h-3.5" />
+          ) : (
+            <AlertTriangle className="w-3.5 h-3.5" />
+          )}
+          <span>
+            {report.isValid
+              ? "Valid"
+              : `${report.errorsCount}E ${report.warningsCount}W`}
+          </span>
+        </button>
 
         <Button
           variant="default"

@@ -9,6 +9,7 @@ import type {
   ApplianceInstance,
   UtilityPoint,
 } from "@/types/kitchen";
+import type { MeasurementItem } from "@/core/geometry/measurement";
 import { DEFAULT_ROOM_PRESET, DEFAULT_PRICING_CONFIG, PLATFORM_DEFAULTS } from "@/data/presets";
 import { generateRoomWalls } from "@/core/geometry/wall";
 
@@ -41,6 +42,9 @@ export interface ProjectSlice {
   addUtilityPoint: (point: UtilityPoint) => void;
   updateUtilityPoint: (pointId: string, patch: Partial<UtilityPoint>) => void;
   removeUtilityPoint: (pointId: string) => void;
+  addMeasurement: (measurement: MeasurementItem) => void;
+  removeMeasurement: (id: string) => void;
+  clearMeasurements: () => void;
   resetProject: (name?: string, customerName?: string) => void;
 }
 
@@ -340,6 +344,31 @@ export const createProjectSlice: StateCreator<ProjectSlice, [], [], ProjectSlice
   removeUtilityPoint: (pointId) =>
     set((state) => withTimestamp({
       project: { ...state.project, utilityPoints: state.project.utilityPoints.filter((p) => p.id !== pointId) },
+    })),
+
+  // ── Measurement Actions ──
+  addMeasurement: (measurement) =>
+    set((state) => withTimestamp({
+      project: {
+        ...state.project,
+        measurements: [...(state.project.measurements || []), measurement],
+      },
+    })),
+
+  removeMeasurement: (id) =>
+    set((state) => withTimestamp({
+      project: {
+        ...state.project,
+        measurements: (state.project.measurements || []).filter((m: MeasurementItem) => m.id !== id),
+      },
+    })),
+
+  clearMeasurements: () =>
+    set((state) => withTimestamp({
+      project: {
+        ...state.project,
+        measurements: [],
+      },
     })),
 
   resetProject: (name, customerName) =>

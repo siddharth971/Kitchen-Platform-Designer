@@ -9,6 +9,7 @@ import { EditorViewport } from "./EditorViewport";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { StatusBar } from "./StatusBar";
 import { CatalogModal } from "./CatalogModal";
+import { ValidationDrawer } from "./ValidationDrawer";
 
 export function EditorLayout() {
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number; z: number } | null>(null);
@@ -23,6 +24,10 @@ export function EditorLayout() {
   const snapEnabled = useAppStore((state) => state.snapEnabled);
   const setSnapEnabled = useAppStore((state) => state.setSnapEnabled);
   const selectObject = useAppStore((state) => state.selectObject);
+  const setActiveTool = useAppStore((state) => state.setActiveTool);
+  const setActiveMeasurementStart = useAppStore((state) => state.setActiveMeasurementStart);
+  const setValidationDrawerOpen = useAppStore((state) => state.setValidationDrawerOpen);
+  const validationDrawerOpen = useAppStore((state) => state.validationDrawerOpen);
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -89,13 +94,34 @@ export function EditorLayout() {
           break;
         case "Escape":
           selectObject(null, null);
+          setActiveMeasurementStart(null);
+          break;
+        // Tool shortcuts
+        case "v":
+        case "V":
+          setActiveTool("select");
+          setActiveMeasurementStart(null);
+          break;
+        case "m":
+        case "M":
+          setActiveTool("measure");
+          break;
+        case "r":
+        case "R":
+          setActiveTool("room");
+          setActiveMeasurementStart(null);
+          break;
+        // Validation drawer
+        case "d":
+        case "D":
+          setValidationDrawerOpen(!validationDrawerOpen);
           break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo, setProject, setCameraMode, triggerFit, gridVisible, setGridVisible, snapEnabled, setSnapEnabled, selectObject]);
+  }, [undo, redo, setProject, setCameraMode, triggerFit, gridVisible, setGridVisible, snapEnabled, setSnapEnabled, selectObject, setActiveTool, setActiveMeasurementStart, setValidationDrawerOpen, validationDrawerOpen]);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-background text-foreground">
@@ -124,6 +150,9 @@ export function EditorLayout() {
 
       {/* Component Catalog Modal */}
       <CatalogModal />
+
+      {/* Design Validation Drawer */}
+      <ValidationDrawer />
     </div>
   );
 }

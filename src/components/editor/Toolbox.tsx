@@ -32,6 +32,7 @@ export function Toolbox() {
   const selectObject = useAppStore((state) => state.selectObject);
   const project = useAppStore((state) => state.project);
   const addPlatform = useAppStore((state) => state.addPlatform);
+  const setActiveMeasurementStart = useAppStore((state) => state.setActiveMeasurementStart);
 
   const tools: ToolItem[] = [
     {
@@ -72,10 +73,9 @@ export function Toolbox() {
     },
     {
       id: "measure",
-      label: "CAD Measurement",
+      label: "CAD Measurement (click two points)",
       icon: Ruler,
-      disabled: true,
-      phaseBadge: "Phase 4",
+      shortcut: "M",
     },
   ];
 
@@ -83,6 +83,10 @@ export function Toolbox() {
 
   const handleToolClick = useCallback((toolId: ActiveTool) => {
     setActiveTool(toolId);
+    // Reset measurement start when switching away from measure tool
+    if (toolId !== "measure") {
+      setActiveMeasurementStart(null);
+    }
 
     if (toolId === "room") {
       selectObject("room", "room");
@@ -126,7 +130,7 @@ export function Toolbox() {
         selectObject(newPlatform.id, "platform");
       }
     }
-  }, [setActiveTool, selectObject, project.platforms, project.room.wallThickness, addPlatform, openCatalog]);
+  }, [setActiveTool, selectObject, project.platforms, project.room.wallThickness, addPlatform, openCatalog, setActiveMeasurementStart]);
 
   return (
     <aside className="w-14 bg-card border-r border-border flex flex-col items-center py-3 gap-1.5 shrink-0 select-none z-10">

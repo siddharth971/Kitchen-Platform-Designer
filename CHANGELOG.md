@@ -2,7 +2,32 @@
 
 All notable changes to the Kitchen Platform Designer project will be documented in this file.
 
-## [Unreleased] - Phase 0 & Phase 1
+## [Unreleased] - Phase 4
+
+### Added
+- **Phase 4: Measurement & Validation**:
+  - `core/validation/index.ts`: Pure domain validation engine (zero React/Babylon deps) covering 7 rules:
+    - Sink-to-hob separation (min 600 mm — fire/water hazard)
+    - Cutout stone edge clearance (min 50 mm bridge)
+    - Cutout containment inside slab boundary
+    - Cutout overlap detection with stone web minimum (100 mm)
+    - Window sill height vs. countertop working height
+    - Refrigerator/appliance ventilation clearances
+    - Platform containment inside room footprint
+  - `core/geometry/measurement/index.ts`: Pure CAD measurement module — `computeMeasurement`, `findNearestSnapPoint`, `extractProjectSnapPoints`.
+  - `engine/MeasurementRenderer.ts`: 3D visual renderer for persistent dimension lines, dashed preview, snap indicator sphere, and start-point dot.
+  - **Measure Tool** (`M` shortcut): Two-click interactive measuring in viewport — hover snapping to room corners, wall ends, and platform vertices. Snap indicator (orange sphere). Cursor crosshair. In-progress dashed line preview.
+  - **Measurement Inspector** in `PropertiesPanel.tsx`: Lists saved measurements with total distance, ΔX/ΔY/ΔZ components, per-measurement delete, and clear-all button.
+  - **ValidationDrawer** (`D` shortcut): Full-height right-side drawer displaying real-time issues categorized as Errors / Warnings / Info, with metric values, suggestions, and "Select object" links.
+  - **Validation badge in TopBar**: Live green "Valid" or red "NE NW" badge (N = count). Badge opens/closes the drawer.
+  - `uiSlice`: Added `validationDrawerOpen` + `setValidationDrawerOpen`, `activeMeasurementStart` + `setActiveMeasurementStart`.
+  - `projectSlice`: `addMeasurement`, `removeMeasurement`, `clearMeasurements` actions.
+  - Keyboard shortcuts: `M` = Measure tool, `V` = Select tool, `D` = toggle Validation drawer, `Escape` clears measurement start.
+  - Complete test suite: **80 unit tests** across **9 test suites** — all passing.
+  - ESLint: 0 errors, 0 warnings.
+  - TypeScript strict: 0 errors.
+
+## [Previous] - Phase 0 & Phase 1
 
 ### Added
 - **Phase 0: Foundation**:

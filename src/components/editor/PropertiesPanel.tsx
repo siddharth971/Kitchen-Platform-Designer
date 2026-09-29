@@ -26,6 +26,8 @@ import {
   Archive,
   Refrigerator,
   Zap,
+  Ruler,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +62,10 @@ export function PropertiesPanel() {
   const removeUtilityPoint = useAppStore((state) => state.removeUtilityPoint);
   const openCatalog = useAppStore((state) => state.openCatalog);
   const pushHistory = useAppStore((state) => state.pushHistory);
+  const activeTool = useAppStore((state) => state.activeTool);
+  const activeMeasurementStart = useAppStore((state) => state.activeMeasurementStart);
+  const removeMeasurement = useAppStore((state) => state.removeMeasurement);
+  const clearMeasurements = useAppStore((state) => state.clearMeasurements);
 
   // Local error state for dimension text inputs
   const [inputError, setInputError] = useState<string | null>(null);
@@ -114,6 +120,8 @@ export function PropertiesPanel() {
             <Refrigerator className="w-4 h-4 text-indigo-500" />
           ) : selectedType === "utility" ? (
             <Zap className="w-4 h-4 text-amber-400" />
+          ) : activeTool === "measure" ? (
+            <Ruler className="w-4 h-4 text-primary" />
           ) : (
             <Home className="w-4 h-4 text-primary" />
           )}
@@ -134,6 +142,8 @@ export function PropertiesPanel() {
               ? "Utility Inspector"
               : selectedType === "room"
               ? "Room Inspector"
+              : activeTool === "measure"
+              ? "Measurement Tool"
               : "Properties"}
           </span>
         </div>
@@ -1756,8 +1766,81 @@ export function PropertiesPanel() {
           </div>
         )}
 
+        {/* MEASURE TOOL PANEL */}
+        {activeTool === "measure" && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Ruler className="w-4 h-4 text-primary" />
+                <span className="text-xs font-semibold text-foreground">Measurements</span>
+              </div>
+              {project.measurements && project.measurements.length > 0 && (
+                <button
+                  onClick={() => clearMeasurements()}
+                  className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1 cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                  Clear all
+                </button>
+              )}
+            </div>
+
+            {/* Instruction when no start set */}
+            <div className={`rounded-lg border px-3 py-2.5 text-[11px] ${
+              activeMeasurementStart
+                ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400"
+                : "bg-muted/50 border-border text-muted-foreground"
+            }`}>
+              {activeMeasurementStart ? (
+                <>📍 Start set at ({Math.round(activeMeasurementStart.x)}, {Math.round(activeMeasurementStart.y)}, {Math.round(activeMeasurementStart.z)}) mm — click end point in viewport</>
+              ) : (
+                <>Click any point in the 3D viewport to start a measurement. Snap points are highlighted in orange.</>
+              )}
+            </div>
+
+            {/* Saved measurements list */}
+            {(!project.measurements || project.measurements.length === 0) ? (
+              <p className="text-[11px] text-muted-foreground text-center py-3">
+                No measurements yet — click two points in the viewport.
+              </p>
+            ) : (
+              <div className="space-y-1.5">
+                {project.measurements.map((m, idx) => (
+                  <div
+                    key={m.id}
+                    className="border border-border rounded-lg p-2.5 bg-card flex items-start gap-2"
+                  >
+                    <Ruler className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-foreground">
+                          #{idx + 1}{m.label ? ` — ${m.label}` : ""}
+                        </span>
+                        <button
+                          onClick={() => removeMeasurement(m.id)}
+                          className="text-muted-foreground hover:text-destructive cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <p className="text-xs font-mono font-bold text-primary mt-0.5">
+                        {formatLength(m.distanceMm, displayUnit)}
+                      </p>
+                      <div className="flex gap-2 mt-0.5 text-[10px] font-mono text-muted-foreground">
+                        <span>ΔX {formatLength(m.dxMm, displayUnit)}</span>
+                        <span>ΔY {formatLength(m.dyMm, displayUnit)}</span>
+                        <span>ΔZ {formatLength(m.dzMm, displayUnit)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* EMPTY STATE / QUICK COMPONENT NAVIGATOR */}
-        {!selectedType && (
+        {!selectedType && activeTool !== "measure" && (
           <div className="space-y-4 py-2">
             <div className="text-center py-4 px-2 space-y-2 border border-dashed border-border rounded-lg bg-muted/20">
               <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">

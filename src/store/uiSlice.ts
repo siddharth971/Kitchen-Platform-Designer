@@ -1,5 +1,6 @@
 import type { StateCreator } from "zustand";
 import type { DisplayUnit } from "@/types/project";
+import type { Point3D } from "@/types/geometry";
 
 export type ActiveTool =
   | "select"
@@ -23,6 +24,8 @@ export interface UiSlice {
   ceilingVisible: boolean;
   catalogOpen: boolean;
   catalogTab: "sinks" | "hobs" | "cabinets" | "appliances" | "utilities";
+  validationDrawerOpen: boolean;
+  activeMeasurementStart: Point3D | null;
 
   setDisplayUnit: (unit: DisplayUnit) => void;
   setActiveTool: (tool: ActiveTool) => void;
@@ -36,6 +39,8 @@ export interface UiSlice {
   setCeilingVisible: (visible: boolean) => void;
   openCatalog: (tab?: "sinks" | "hobs" | "cabinets" | "appliances" | "utilities") => void;
   closeCatalog: () => void;
+  setValidationDrawerOpen: (open: boolean) => void;
+  setActiveMeasurementStart: (point: Point3D | null) => void;
 }
 
 export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
@@ -51,6 +56,8 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   ceilingVisible: false,
   catalogOpen: false,
   catalogTab: "sinks",
+  validationDrawerOpen: false,
+  activeMeasurementStart: null,
 
   setDisplayUnit: (displayUnit) => set({ displayUnit }),
   setActiveTool: (activeTool) => set({ activeTool }),
@@ -64,4 +71,6 @@ export const createUiSlice: StateCreator<UiSlice, [], [], UiSlice> = (set) => ({
   setCeilingVisible: (ceilingVisible) => set({ ceilingVisible }),
   openCatalog: (tab = "sinks") => set({ catalogOpen: true, catalogTab: tab }),
   closeCatalog: () => set({ catalogOpen: false }),
+  setValidationDrawerOpen: (validationDrawerOpen) => set({ validationDrawerOpen }),
+  setActiveMeasurementStart: (activeMeasurementStart) => set({ activeMeasurementStart }),
 });
